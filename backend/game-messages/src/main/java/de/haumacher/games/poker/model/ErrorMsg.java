@@ -1,5 +1,11 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Error message sent to a single player when their action is rejected.
+ *
+ * <p>Examples: invalid action for current state, raise too small, not your turn.
+ * The error code can be used for i18n on the client side.</p>
+ */
 public interface ErrorMsg extends ServerMessage {
 
 	/**
@@ -27,6 +33,9 @@ public interface ErrorMsg extends ServerMessage {
 	/** Identifier for the property {@link #getMessage()} in binary format. */
 	static final int MESSAGE__ID = 2;
 
+	/**
+	 * Machine-readable error code (e.g. "INVALID_ACTION", "RAISE_TOO_SMALL").
+	 */
 	String getCode();
 
 	/**
@@ -34,6 +43,9 @@ public interface ErrorMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.ErrorMsg setCode(String value);
 
+	/**
+	 * Human-readable error description.
+	 */
 	String getMessage();
 
 	/**

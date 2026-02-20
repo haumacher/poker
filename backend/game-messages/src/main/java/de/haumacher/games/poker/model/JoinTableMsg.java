@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Request to join a table and optionally sit at a preferred seat.
+ */
 public interface JoinTableMsg extends ClientMessage {
 
 	/**
@@ -27,6 +30,9 @@ public interface JoinTableMsg extends ClientMessage {
 	/** Identifier for the property {@link #getPreferredSeat()} in binary format. */
 	static final int PREFERRED_SEAT__ID = 2;
 
+	/**
+	 * ID of the table to join.
+	 */
 	String getTableId();
 
 	/**
@@ -34,6 +40,9 @@ public interface JoinTableMsg extends ClientMessage {
 	 */
 	de.haumacher.games.poker.model.JoinTableMsg setTableId(String value);
 
+	/**
+	 * Desired seat index (0-8), or -1 for any available seat.
+	 */
 	int getPreferredSeat();
 
 	/**

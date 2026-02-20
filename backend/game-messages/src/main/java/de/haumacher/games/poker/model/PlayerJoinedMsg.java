@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Broadcast when a new player sits down at the table.
+ */
 public interface PlayerJoinedMsg extends ServerMessage {
 
 	/**
@@ -21,6 +24,9 @@ public interface PlayerJoinedMsg extends ServerMessage {
 	/** Identifier for the property {@link #getPlayerState()} in binary format. */
 	static final int PLAYER_STATE__ID = 1;
 
+	/**
+	 * Full state of the player who joined.
+	 */
 	de.haumacher.games.poker.model.PlayerState getPlayerState();
 
 	/**

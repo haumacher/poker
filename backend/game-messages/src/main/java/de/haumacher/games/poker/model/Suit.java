@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Card suit. All four suits are equal in Texas Hold'em (no suit ranking).
+ */
 public enum Suit implements de.haumacher.msgbuf.data.ProtocolEnum {
 
 	HEARTS("HEARTS"),

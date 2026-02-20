@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Card rank, ordered from lowest (TWO) to highest (ACE).
+ */
 public enum Rank implements de.haumacher.msgbuf.data.ProtocolEnum {
 
 	TWO("TWO"),

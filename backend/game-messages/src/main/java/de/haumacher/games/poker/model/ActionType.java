@@ -1,15 +1,33 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * A player action during a betting round.
+ */
 public enum ActionType implements de.haumacher.msgbuf.data.ProtocolEnum {
 
+	/**
+	 * Surrender the hand and forfeit any chips already in the pot.
+	 */
 	FOLD("FOLD"),
 
+	/**
+	 * Pass the action when no bet is outstanding (bet stays at zero).
+	 */
 	CHECK("CHECK"),
 
+	/**
+	 * Match the current highest bet.
+	 */
 	CALL("CALL"),
 
+	/**
+	 * Increase the current bet. The raise amount must meet the minimum raise.
+	 */
 	RAISE("RAISE"),
 
+	/**
+	 * Bet all remaining chips. Allowed even if below the minimum raise.
+	 */
 	ALL_IN("ALL_IN"),
 
 	;

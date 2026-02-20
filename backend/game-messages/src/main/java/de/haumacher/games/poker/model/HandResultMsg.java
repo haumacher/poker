@@ -1,5 +1,11 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Showdown results announcing winners and their hands.
+ *
+ * <p>Sent after SHOWDOWN phase when multiple players remain.
+ * Multiple winners are possible (split pots, multiple side pots).</p>
+ */
 public interface HandResultMsg extends ServerMessage {
 
 	/**
@@ -21,6 +27,9 @@ public interface HandResultMsg extends ServerMessage {
 	/** Identifier for the property {@link #getWinners()} in binary format. */
 	static final int WINNERS__ID = 1;
 
+	/**
+	 * All winners across main pot and side pots.
+	 */
 	java.util.List<de.haumacher.games.poker.model.WinnerInfo> getWinners();
 
 	/**

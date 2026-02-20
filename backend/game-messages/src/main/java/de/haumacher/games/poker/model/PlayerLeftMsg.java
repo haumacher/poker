@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Broadcast when a player leaves the table.
+ */
 public interface PlayerLeftMsg extends ServerMessage {
 
 	/**
@@ -21,6 +24,9 @@ public interface PlayerLeftMsg extends ServerMessage {
 	/** Identifier for the property {@link #getSeat()} in binary format. */
 	static final int SEAT__ID = 1;
 
+	/**
+	 * Seat index that was vacated.
+	 */
 	int getSeat();
 
 	/**

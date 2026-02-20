@@ -1,15 +1,33 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * A player's current status within a hand.
+ */
 public enum PlayerStatus implements de.haumacher.msgbuf.data.ProtocolEnum {
 
+	/**
+	 * Seated but not yet participating in a hand.
+	 */
 	WAITING("WAITING"),
 
+	/**
+	 * In the current hand and able to act.
+	 */
 	ACTIVE("ACTIVE"),
 
+	/**
+	 * Folded this hand; still seated but out until the next hand.
+	 */
 	FOLDED("FOLDED"),
 
+	/**
+	 * All chips committed; still in the hand but cannot act further.
+	 */
 	ALL_IN("ALL_IN"),
 
+	/**
+	 * Voluntarily sitting out; skipped for dealing and blinds.
+	 */
 	SITTING_OUT("SITTING_OUT"),
 
 	;

@@ -1,7 +1,7 @@
 package de.haumacher.games.poker.model;
 
 /**
- * Client to server messages.
+ * Base type for all client-to-server messages. Dispatched via the generated Visitor.
  */
 public interface ClientMessage extends de.haumacher.msgbuf.data.DataObject, de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 

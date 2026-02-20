@@ -1,5 +1,6 @@
 package de.haumacher.games.poker.model;
 
+/** Card rank, ordered from lowest (TWO) to highest (ACE). */
 enum Rank {
 	TWO = 0;
 	THREE = 1;
@@ -16,6 +17,7 @@ enum Rank {
 	ACE = 12;
 }
 
+/** Card suit. All four suits are equal in Texas Hold'em (no suit ranking). */
 enum Suit {
 	HEARTS = 0;
 	DIAMONDS = 1;
@@ -23,116 +25,272 @@ enum Suit {
 	SPADES = 3;
 }
 
+/**
+ * The current phase of a hand's lifecycle.
+ *
+ * <p>Transitions: WAITING_FOR_PLAYERS → PRE_FLOP → FLOP → TURN → RIVER → SHOWDOWN.
+ * Any betting round can jump directly to SHOWDOWN if all but one player folds
+ * or all remaining players are all-in.</p>
+ */
 enum Phase {
+	/** No hand in progress, waiting for enough players to start. */
 	WAITING_FOR_PLAYERS = 0;
+
+	/** Hole cards dealt, first betting round (before any community cards). */
 	PRE_FLOP = 1;
+
+	/** Three community cards dealt, second betting round. */
 	FLOP = 2;
+
+	/** Fourth community card dealt, third betting round. */
 	TURN = 3;
+
+	/** Fifth community card dealt, final betting round. */
 	RIVER = 4;
+
+	/** Hands revealed and pots awarded. */
 	SHOWDOWN = 5;
 }
 
+/** A player action during a betting round. */
 enum ActionType {
+	/** Surrender the hand and forfeit any chips already in the pot. */
 	FOLD = 0;
+
+	/** Pass the action when no bet is outstanding (bet stays at zero). */
 	CHECK = 1;
+
+	/** Match the current highest bet. */
 	CALL = 2;
+
+	/** Increase the current bet. The raise amount must meet the minimum raise. */
 	RAISE = 3;
+
+	/** Bet all remaining chips. Allowed even if below the minimum raise. */
 	ALL_IN = 4;
 }
 
+/** A player's current status within a hand. */
 enum PlayerStatus {
+	/** Seated but not yet participating in a hand. */
 	WAITING = 0;
+
+	/** In the current hand and able to act. */
 	ACTIVE = 1;
+
+	/** Folded this hand; still seated but out until the next hand. */
 	FOLDED = 2;
+
+	/** All chips committed; still in the hand but cannot act further. */
 	ALL_IN = 3;
+
+	/** Voluntarily sitting out; skipped for dealing and blinds. */
 	SITTING_OUT = 4;
 }
 
+/** A single playing card identified by rank and suit. */
 message Card {
+	/** The rank of this card (TWO through ACE). */
 	Rank rank;
+
+	/** The suit of this card. */
 	Suit suit;
 }
 
+/**
+ * Public state of one player at the table.
+ *
+ * <p>Broadcast to all clients. Does not include hole cards (those are sent
+ * privately via {@link HoleCardsMsg}).</p>
+ */
 message PlayerState {
+	/** Seat index (0-8) at the table. */
 	int seat;
+
+	/** The player's chosen display name. */
 	string displayName;
+
+	/** Current chip count (excludes chips already bet this round). */
 	long chips;
+
+	/** Amount bet in the current betting round. Reset to 0 when a new round begins. */
 	long currentBet;
+
+	/** The player's status in the current hand. */
 	PlayerStatus status;
+
+	/** The most recent action taken by this player (null if none yet this hand). */
 	ActionType lastAction;
 }
 
+/**
+ * A side pot created when players go all-in with unequal stacks.
+ *
+ * <p>Each side pot has an amount and a list of seats eligible to win it.
+ * Players who folded or didn't contribute enough chips are excluded.</p>
+ */
 message SidePot {
+	/** Total chips in this side pot. */
 	long amount;
+
+	/** Seat indices of players eligible to win this pot. */
 	repeated int eligibleSeats;
 }
 
+/** Describes one winner's share of a pot at showdown. */
 message WinnerInfo {
+	/** Seat index of the winning player. */
 	int seat;
+
+	/** Chips awarded from this pot. */
 	long amount;
+
+	/** Human-readable hand description (e.g. "Full House", "Two Pair"). */
 	string handDescription;
 }
 
-/** Server to client messages. */
+/* ============================================================================
+ * Server → Client messages
+ *
+ * All messages sent from the server to connected clients. Public messages are
+ * broadcast to every player at the table; private messages (e.g. HoleCardsMsg)
+ * are sent only to the individual player's WebSocket connection.
+ * ============================================================================ */
+
+/** Base type for all server-to-client messages. Dispatched via the generated Visitor. */
 abstract message ServerMessage {
-	/* No common fields. */
 }
 
+/**
+ * Full public game state broadcast to all players at the table.
+ *
+ * <p>Sent after every state change (phase transition, player action, player join/leave).
+ * Contains everything a client needs to render the table — except private hole cards.</p>
+ */
 message GameStateMsg extends ServerMessage {
+	/** Unique identifier of the table. */
 	string tableId;
+
+	/** Sequential hand number (1-based), incremented each new deal. */
 	int handNumber;
+
+	/** Current phase of the hand. */
 	Phase phase;
+
+	/** Community cards dealt so far (0 in PRE_FLOP, 3 after FLOP, 4 after TURN, 5 after RIVER). */
 	repeated Card communityCards;
+
+	/** Total chips in all pots combined. */
 	long pot;
+
+	/** Breakdown of side pots when players are all-in with unequal stacks. Empty if no side pots. */
 	repeated SidePot sidePots;
+
+	/** Seat index of the player whose turn it is to act, or -1 if no action pending. */
 	int currentPlayerSeat;
+
+	/** Seat index of the current dealer button. */
 	int dealerSeat;
+
+	/** State of all seated players (up to 9). */
 	repeated PlayerState players;
+
+	/** Seconds remaining for the current player to act before auto-fold. */
 	int turnTimeRemaining;
+
+	/** Minimum total bet amount for a legal raise. */
 	long minRaise;
 }
 
+/**
+ * Private hole cards sent only to the individual player.
+ *
+ * <p>Never broadcast — routed to a single WebSocket connection.
+ * The client uses these to display the player's own cards.</p>
+ */
 message HoleCardsMsg extends ServerMessage {
+	/** Hand number these cards belong to (for correlation with GameStateMsg). */
 	int handNumber;
+
+	/** The player's two private hole cards. */
 	repeated Card cards;
 }
 
+/**
+ * Showdown results announcing winners and their hands.
+ *
+ * <p>Sent after SHOWDOWN phase when multiple players remain.
+ * Multiple winners are possible (split pots, multiple side pots).</p>
+ */
 message HandResultMsg extends ServerMessage {
+	/** All winners across main pot and side pots. */
 	repeated WinnerInfo winners;
 }
 
+/**
+ * Error message sent to a single player when their action is rejected.
+ *
+ * <p>Examples: invalid action for current state, raise too small, not your turn.
+ * The error code can be used for i18n on the client side.</p>
+ */
 message ErrorMsg extends ServerMessage {
+	/** Machine-readable error code (e.g. "INVALID_ACTION", "RAISE_TOO_SMALL"). */
 	string code;
+
+	/** Human-readable error description. */
 	string `message`;
 }
 
+/** Broadcast when a new player sits down at the table. */
 message PlayerJoinedMsg extends ServerMessage {
+	/** Full state of the player who joined. */
 	PlayerState playerState;
 }
 
+/** Broadcast when a player leaves the table. */
 message PlayerLeftMsg extends ServerMessage {
+	/** Seat index that was vacated. */
 	int seat;
 }
 
-/** Client to server messages. */
+/* ============================================================================
+ * Client → Server messages
+ *
+ * All messages sent from a connected client to the server. The server validates
+ * every message before applying it — clients are never trusted.
+ * ============================================================================ */
+
+/** Base type for all client-to-server messages. Dispatched via the generated Visitor. */
 abstract message ClientMessage {
-	/* No common fields. */
 }
 
+/** A player's action during a betting round. */
 message PlayerActionMsg extends ClientMessage {
+	/** The type of action (FOLD, CHECK, CALL, RAISE, ALL_IN). */
 	ActionType actionType;
+
+	/**
+	 * Total bet amount (only meaningful for RAISE — the target bet size, not the increment).
+	 * Ignored for FOLD, CHECK, CALL, ALL_IN.
+	 */
 	long amount;
 }
 
+/** Request to join a table and optionally sit at a preferred seat. */
 message JoinTableMsg extends ClientMessage {
+	/** ID of the table to join. */
 	string tableId;
+
+	/** Desired seat index (0-8), or -1 for any available seat. */
 	int preferredSeat;
 }
 
+/** Request to leave the current table and cash out chips. */
 message LeaveTableMsg extends ClientMessage {
-	/* No fields. */
 }
 
+/** A chat message or emoji sent to the table. */
 message ChatMsg extends ClientMessage {
+	/** The chat text content. */
 	string text;
 }

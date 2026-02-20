@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * A chat message or emoji sent to the table.
+ */
 public interface ChatMsg extends ClientMessage {
 
 	/**
@@ -21,6 +24,9 @@ public interface ChatMsg extends ClientMessage {
 	/** Identifier for the property {@link #getText()} in binary format. */
 	static final int TEXT__ID = 1;
 
+	/**
+	 * The chat text content.
+	 */
 	String getText();
 
 	/**

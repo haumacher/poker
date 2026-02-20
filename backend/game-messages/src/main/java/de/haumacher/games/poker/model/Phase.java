@@ -1,17 +1,42 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * The current phase of a hand's lifecycle.
+ *
+ * <p>Transitions: WAITING_FOR_PLAYERS → PRE_FLOP → FLOP → TURN → RIVER → SHOWDOWN.
+ * Any betting round can jump directly to SHOWDOWN if all but one player folds
+ * or all remaining players are all-in.</p>
+ */
 public enum Phase implements de.haumacher.msgbuf.data.ProtocolEnum {
 
+	/**
+	 * No hand in progress, waiting for enough players to start.
+	 */
 	WAITING_FOR_PLAYERS("WAITING_FOR_PLAYERS"),
 
+	/**
+	 * Hole cards dealt, first betting round (before any community cards).
+	 */
 	PRE_FLOP("PRE_FLOP"),
 
+	/**
+	 * Three community cards dealt, second betting round.
+	 */
 	FLOP("FLOP"),
 
+	/**
+	 * Fourth community card dealt, third betting round.
+	 */
 	TURN("TURN"),
 
+	/**
+	 * Fifth community card dealt, final betting round.
+	 */
 	RIVER("RIVER"),
 
+	/**
+	 * Hands revealed and pots awarded.
+	 */
 	SHOWDOWN("SHOWDOWN"),
 
 	;

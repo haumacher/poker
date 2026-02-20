@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * A single playing card identified by rank and suit.
+ */
 public interface Card extends de.haumacher.msgbuf.data.DataObject, de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
@@ -24,6 +27,9 @@ public interface Card extends de.haumacher.msgbuf.data.DataObject, de.haumacher.
 	/** Identifier for the property {@link #getSuit()} in binary format. */
 	static final int SUIT__ID = 2;
 
+	/**
+	 * The rank of this card (TWO through ACE).
+	 */
 	de.haumacher.games.poker.model.Rank getRank();
 
 	/**
@@ -31,6 +37,9 @@ public interface Card extends de.haumacher.msgbuf.data.DataObject, de.haumacher.
 	 */
 	de.haumacher.games.poker.model.Card setRank(de.haumacher.games.poker.model.Rank value);
 
+	/**
+	 * The suit of this card.
+	 */
 	de.haumacher.games.poker.model.Suit getSuit();
 
 	/**

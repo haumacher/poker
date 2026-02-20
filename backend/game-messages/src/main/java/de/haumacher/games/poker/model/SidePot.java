@@ -1,5 +1,11 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * A side pot created when players go all-in with unequal stacks.
+ *
+ * <p>Each side pot has an amount and a list of seats eligible to win it.
+ * Players who folded or didn't contribute enough chips are excluded.</p>
+ */
 public interface SidePot extends de.haumacher.msgbuf.data.DataObject, de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
@@ -24,6 +30,9 @@ public interface SidePot extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/** Identifier for the property {@link #getEligibleSeats()} in binary format. */
 	static final int ELIGIBLE_SEATS__ID = 2;
 
+	/**
+	 * Total chips in this side pot.
+	 */
 	long getAmount();
 
 	/**
@@ -31,6 +40,9 @@ public interface SidePot extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	 */
 	de.haumacher.games.poker.model.SidePot setAmount(long value);
 
+	/**
+	 * Seat indices of players eligible to win this pot.
+	 */
 	java.util.List<Integer> getEligibleSeats();
 
 	/**

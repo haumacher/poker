@@ -1,5 +1,11 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Private hole cards sent only to the individual player.
+ *
+ * <p>Never broadcast — routed to a single WebSocket connection.
+ * The client uses these to display the player's own cards.</p>
+ */
 public interface HoleCardsMsg extends ServerMessage {
 
 	/**
@@ -27,6 +33,9 @@ public interface HoleCardsMsg extends ServerMessage {
 	/** Identifier for the property {@link #getCards()} in binary format. */
 	static final int CARDS__ID = 2;
 
+	/**
+	 * Hand number these cards belong to (for correlation with GameStateMsg).
+	 */
 	int getHandNumber();
 
 	/**
@@ -34,6 +43,9 @@ public interface HoleCardsMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.HoleCardsMsg setHandNumber(int value);
 
+	/**
+	 * The player's two private hole cards.
+	 */
 	java.util.List<de.haumacher.games.poker.model.Card> getCards();
 
 	/**

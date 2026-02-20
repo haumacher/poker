@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * A player's action during a betting round.
+ */
 public interface PlayerActionMsg extends ClientMessage {
 
 	/**
@@ -27,6 +30,9 @@ public interface PlayerActionMsg extends ClientMessage {
 	/** Identifier for the property {@link #getAmount()} in binary format. */
 	static final int AMOUNT__ID = 2;
 
+	/**
+	 * The type of action (FOLD, CHECK, CALL, RAISE, ALL_IN).
+	 */
 	de.haumacher.games.poker.model.ActionType getActionType();
 
 	/**
@@ -34,6 +40,10 @@ public interface PlayerActionMsg extends ClientMessage {
 	 */
 	de.haumacher.games.poker.model.PlayerActionMsg setActionType(de.haumacher.games.poker.model.ActionType value);
 
+	/**
+	 * Total bet amount (only meaningful for RAISE — the target bet size, not the increment).
+	 * Ignored for FOLD, CHECK, CALL, ALL_IN.
+	 */
 	long getAmount();
 
 	/**

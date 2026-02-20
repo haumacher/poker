@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Request to leave the current table and cash out chips.
+ */
 public interface LeaveTableMsg extends ClientMessage {
 
 	/**

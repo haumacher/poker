@@ -1,5 +1,11 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Public state of one player at the table.
+ *
+ * <p>Broadcast to all clients. Does not include hole cards (those are sent
+	 * privately via {@link HoleCardsMsg}).</p>
+ */
 public interface PlayerState extends de.haumacher.msgbuf.data.DataObject, de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
@@ -48,6 +54,9 @@ public interface PlayerState extends de.haumacher.msgbuf.data.DataObject, de.hau
 	/** Identifier for the property {@link #getLastAction()} in binary format. */
 	static final int LAST_ACTION__ID = 6;
 
+	/**
+	 * Seat index (0-8) at the table.
+	 */
 	int getSeat();
 
 	/**
@@ -55,6 +64,9 @@ public interface PlayerState extends de.haumacher.msgbuf.data.DataObject, de.hau
 	 */
 	de.haumacher.games.poker.model.PlayerState setSeat(int value);
 
+	/**
+	 * The player's chosen display name.
+	 */
 	String getDisplayName();
 
 	/**
@@ -62,6 +74,9 @@ public interface PlayerState extends de.haumacher.msgbuf.data.DataObject, de.hau
 	 */
 	de.haumacher.games.poker.model.PlayerState setDisplayName(String value);
 
+	/**
+	 * Current chip count (excludes chips already bet this round).
+	 */
 	long getChips();
 
 	/**
@@ -69,6 +84,9 @@ public interface PlayerState extends de.haumacher.msgbuf.data.DataObject, de.hau
 	 */
 	de.haumacher.games.poker.model.PlayerState setChips(long value);
 
+	/**
+	 * Amount bet in the current betting round. Reset to 0 when a new round begins.
+	 */
 	long getCurrentBet();
 
 	/**
@@ -76,6 +94,9 @@ public interface PlayerState extends de.haumacher.msgbuf.data.DataObject, de.hau
 	 */
 	de.haumacher.games.poker.model.PlayerState setCurrentBet(long value);
 
+	/**
+	 * The player's status in the current hand.
+	 */
 	de.haumacher.games.poker.model.PlayerStatus getStatus();
 
 	/**
@@ -83,6 +104,9 @@ public interface PlayerState extends de.haumacher.msgbuf.data.DataObject, de.hau
 	 */
 	de.haumacher.games.poker.model.PlayerState setStatus(de.haumacher.games.poker.model.PlayerStatus value);
 
+	/**
+	 * The most recent action taken by this player (null if none yet this hand).
+	 */
 	de.haumacher.games.poker.model.ActionType getLastAction();
 
 	/**

@@ -1,5 +1,8 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Describes one winner's share of a pot at showdown.
+ */
 public interface WinnerInfo extends de.haumacher.msgbuf.data.DataObject, de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
@@ -30,6 +33,9 @@ public interface WinnerInfo extends de.haumacher.msgbuf.data.DataObject, de.haum
 	/** Identifier for the property {@link #getHandDescription()} in binary format. */
 	static final int HAND_DESCRIPTION__ID = 3;
 
+	/**
+	 * Seat index of the winning player.
+	 */
 	int getSeat();
 
 	/**
@@ -37,6 +43,9 @@ public interface WinnerInfo extends de.haumacher.msgbuf.data.DataObject, de.haum
 	 */
 	de.haumacher.games.poker.model.WinnerInfo setSeat(int value);
 
+	/**
+	 * Chips awarded from this pot.
+	 */
 	long getAmount();
 
 	/**
@@ -44,6 +53,9 @@ public interface WinnerInfo extends de.haumacher.msgbuf.data.DataObject, de.haum
 	 */
 	de.haumacher.games.poker.model.WinnerInfo setAmount(long value);
 
+	/**
+	 * Human-readable hand description (e.g. "Full House", "Two Pair").
+	 */
 	String getHandDescription();
 
 	/**

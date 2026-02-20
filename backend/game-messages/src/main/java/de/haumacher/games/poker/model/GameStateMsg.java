@@ -1,5 +1,11 @@
 package de.haumacher.games.poker.model;
 
+/**
+ * Full public game state broadcast to all players at the table.
+ *
+ * <p>Sent after every state change (phase transition, player action, player join/leave).
+ * Contains everything a client needs to render the table — except private hole cards.</p>
+ */
 public interface GameStateMsg extends ServerMessage {
 
 	/**
@@ -81,6 +87,9 @@ public interface GameStateMsg extends ServerMessage {
 	/** Identifier for the property {@link #getMinRaise()} in binary format. */
 	static final int MIN_RAISE__ID = 11;
 
+	/**
+	 * Unique identifier of the table.
+	 */
 	String getTableId();
 
 	/**
@@ -88,6 +97,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.GameStateMsg setTableId(String value);
 
+	/**
+	 * Sequential hand number (1-based), incremented each new deal.
+	 */
 	int getHandNumber();
 
 	/**
@@ -95,6 +107,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.GameStateMsg setHandNumber(int value);
 
+	/**
+	 * Current phase of the hand.
+	 */
 	de.haumacher.games.poker.model.Phase getPhase();
 
 	/**
@@ -102,6 +117,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.GameStateMsg setPhase(de.haumacher.games.poker.model.Phase value);
 
+	/**
+	 * Community cards dealt so far (0 in PRE_FLOP, 3 after FLOP, 4 after TURN, 5 after RIVER).
+	 */
 	java.util.List<de.haumacher.games.poker.model.Card> getCommunityCards();
 
 	/**
@@ -119,6 +137,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	void removeCommunityCard(de.haumacher.games.poker.model.Card value);
 
+	/**
+	 * Total chips in all pots combined.
+	 */
 	long getPot();
 
 	/**
@@ -126,6 +147,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.GameStateMsg setPot(long value);
 
+	/**
+	 * Breakdown of side pots when players are all-in with unequal stacks. Empty if no side pots.
+	 */
 	java.util.List<de.haumacher.games.poker.model.SidePot> getSidePots();
 
 	/**
@@ -143,6 +167,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	void removeSidePot(de.haumacher.games.poker.model.SidePot value);
 
+	/**
+	 * Seat index of the player whose turn it is to act, or -1 if no action pending.
+	 */
 	int getCurrentPlayerSeat();
 
 	/**
@@ -150,6 +177,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.GameStateMsg setCurrentPlayerSeat(int value);
 
+	/**
+	 * Seat index of the current dealer button.
+	 */
 	int getDealerSeat();
 
 	/**
@@ -157,6 +187,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.GameStateMsg setDealerSeat(int value);
 
+	/**
+	 * State of all seated players (up to 9).
+	 */
 	java.util.List<de.haumacher.games.poker.model.PlayerState> getPlayers();
 
 	/**
@@ -174,6 +207,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	void removePlayer(de.haumacher.games.poker.model.PlayerState value);
 
+	/**
+	 * Seconds remaining for the current player to act before auto-fold.
+	 */
 	int getTurnTimeRemaining();
 
 	/**
@@ -181,6 +217,9 @@ public interface GameStateMsg extends ServerMessage {
 	 */
 	de.haumacher.games.poker.model.GameStateMsg setTurnTimeRemaining(int value);
 
+	/**
+	 * Minimum total bet amount for a legal raise.
+	 */
 	long getMinRaise();
 
 	/**
