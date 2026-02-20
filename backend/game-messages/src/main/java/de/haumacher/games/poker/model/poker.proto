@@ -1,5 +1,7 @@
 package de.haumacher.games.poker.model;
 
+option DartLib = "../../../../../frontend/lib/models/poker_messages.dart";
+
 /** Card rank, ordered from lowest (TWO) to highest (ACE). */
 enum Rank {
 	TWO = 0;
