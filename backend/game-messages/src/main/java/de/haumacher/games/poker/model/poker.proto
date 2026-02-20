@@ -253,6 +253,28 @@ message PlayerLeftMsg extends ServerMessage {
 	int seat;
 }
 
+/**
+ * Confirmation sent privately after a player creates or joins a table.
+ *
+ * <p>Contains the room code the player can share with friends to invite them.</p>
+ */
+message TableInfoMsg extends ServerMessage {
+	/** Unique identifier of the table. */
+	string tableId;
+
+	/** 6-character room code for sharing with friends. */
+	string roomCode;
+
+	/** Assigned seat index, or -1 if the player has not sat down yet (create only). */
+	int seat;
+
+	/** Small blind amount for this table. */
+	long smallBlind;
+
+	/** Big blind amount for this table. */
+	long bigBlind;
+}
+
 /* ============================================================================
  * Client → Server messages
  *
@@ -283,6 +305,12 @@ message JoinTableMsg extends ClientMessage {
 
 	/** Desired seat index (0-8), or -1 for any available seat. */
 	int preferredSeat;
+
+	/** The player's chosen display name. Empty means server picks a default. */
+	string displayName;
+
+	/** Starting chip count. Zero means server picks a default. */
+	long chips;
 }
 
 /** Request to leave the current table and cash out chips. */
@@ -293,4 +321,13 @@ message LeaveTableMsg extends ClientMessage {
 message ChatMsg extends ClientMessage {
 	/** The chat text content. */
 	string text;
+}
+
+/** Request to create a new table with configurable blinds. */
+message CreateTableMsg extends ClientMessage {
+	/** Small blind amount. Must be positive. */
+	long smallBlind;
+
+	/** Big blind amount. Must be exactly 2x smallBlind. */
+	long bigBlind;
 }

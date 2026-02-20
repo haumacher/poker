@@ -122,6 +122,10 @@ public abstract class ServerMessage_Impl extends de.haumacher.msgbuf.data.Abstra
 				return de.haumacher.games.poker.model.impl.PlayerLeftMsg_Impl.readPlayerLeftMsg_XmlContent(in);
 			}
 
+			case TableInfoMsg_Impl.TABLE_INFO_MSG__XML_ELEMENT: {
+				return de.haumacher.games.poker.model.impl.TableInfoMsg_Impl.readTableInfoMsg_XmlContent(in);
+			}
+
 			default: {
 				internalSkipUntilMatchingEndElement(in);
 				return null;

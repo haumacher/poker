@@ -25,6 +25,9 @@ public interface ServerMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 
 		/** Type literal for {@link de.haumacher.games.poker.model.PlayerLeftMsg}. */
 		PLAYER_LEFT_MSG,
+
+		/** Type literal for {@link de.haumacher.games.poker.model.TableInfoMsg}. */
+		TABLE_INFO_MSG,
 		;
 
 	}
@@ -50,6 +53,9 @@ public interface ServerMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 		/** Visit case for {@link de.haumacher.games.poker.model.PlayerLeftMsg}.*/
 		R visit(de.haumacher.games.poker.model.PlayerLeftMsg self, A arg) throws E;
 
+		/** Visit case for {@link de.haumacher.games.poker.model.TableInfoMsg}.*/
+		R visit(de.haumacher.games.poker.model.TableInfoMsg self, A arg) throws E;
+
 	}
 
 	/** The type code of this instance. */
@@ -73,6 +79,7 @@ public interface ServerMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 			case ErrorMsg.ERROR_MSG__TYPE: result = de.haumacher.games.poker.model.ErrorMsg.readErrorMsg(in); break;
 			case PlayerJoinedMsg.PLAYER_JOINED_MSG__TYPE: result = de.haumacher.games.poker.model.PlayerJoinedMsg.readPlayerJoinedMsg(in); break;
 			case PlayerLeftMsg.PLAYER_LEFT_MSG__TYPE: result = de.haumacher.games.poker.model.PlayerLeftMsg.readPlayerLeftMsg(in); break;
+			case TableInfoMsg.TABLE_INFO_MSG__TYPE: result = de.haumacher.games.poker.model.TableInfoMsg.readTableInfoMsg(in); break;
 			default: in.skipValue(); result = null; break;
 		}
 		in.endArray();
@@ -96,6 +103,7 @@ public interface ServerMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 			case de.haumacher.games.poker.model.ErrorMsg.ERROR_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.ErrorMsg_Impl.readErrorMsg_Content(in); break;
 			case de.haumacher.games.poker.model.PlayerJoinedMsg.PLAYER_JOINED_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.PlayerJoinedMsg_Impl.readPlayerJoinedMsg_Content(in); break;
 			case de.haumacher.games.poker.model.PlayerLeftMsg.PLAYER_LEFT_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.PlayerLeftMsg_Impl.readPlayerLeftMsg_Content(in); break;
+			case de.haumacher.games.poker.model.TableInfoMsg.TABLE_INFO_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.TableInfoMsg_Impl.readTableInfoMsg_Content(in); break;
 			default: result = null; while (in.hasNext()) {in.skipValue(); }
 		}
 		in.endObject();

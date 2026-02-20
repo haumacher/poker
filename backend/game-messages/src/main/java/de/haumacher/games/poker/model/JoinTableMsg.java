@@ -21,6 +21,12 @@ public interface JoinTableMsg extends ClientMessage {
 	/** @see #getPreferredSeat() */
 	String PREFERRED_SEAT__PROP = "preferredSeat";
 
+	/** @see #getDisplayName() */
+	String DISPLAY_NAME__PROP = "displayName";
+
+	/** @see #getChips() */
+	String CHIPS__PROP = "chips";
+
 	/** Identifier for the {@link de.haumacher.games.poker.model.JoinTableMsg} type in binary format. */
 	static final int JOIN_TABLE_MSG__TYPE_ID = 2;
 
@@ -29,6 +35,12 @@ public interface JoinTableMsg extends ClientMessage {
 
 	/** Identifier for the property {@link #getPreferredSeat()} in binary format. */
 	static final int PREFERRED_SEAT__ID = 2;
+
+	/** Identifier for the property {@link #getDisplayName()} in binary format. */
+	static final int DISPLAY_NAME__ID = 3;
+
+	/** Identifier for the property {@link #getChips()} in binary format. */
+	static final int CHIPS__ID = 4;
 
 	/**
 	 * ID of the table to join.
@@ -49,6 +61,26 @@ public interface JoinTableMsg extends ClientMessage {
 	 * @see #getPreferredSeat()
 	 */
 	de.haumacher.games.poker.model.JoinTableMsg setPreferredSeat(int value);
+
+	/**
+	 * The player's chosen display name. Empty means server picks a default.
+	 */
+	String getDisplayName();
+
+	/**
+	 * @see #getDisplayName()
+	 */
+	de.haumacher.games.poker.model.JoinTableMsg setDisplayName(String value);
+
+	/**
+	 * Starting chip count. Zero means server picks a default.
+	 */
+	long getChips();
+
+	/**
+	 * @see #getChips()
+	 */
+	de.haumacher.games.poker.model.JoinTableMsg setChips(long value);
 
 	/** Reads a new instance from the given reader. */
 	static de.haumacher.games.poker.model.JoinTableMsg readJoinTableMsg(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {

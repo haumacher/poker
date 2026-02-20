@@ -14,9 +14,11 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import de.haumacher.games.poker.model.ChatMsg;
 import de.haumacher.games.poker.model.ClientMessage;
+import de.haumacher.games.poker.model.CreateTableMsg;
 import de.haumacher.games.poker.model.JoinTableMsg;
 import de.haumacher.games.poker.model.LeaveTableMsg;
 import de.haumacher.games.poker.model.PlayerActionMsg;
+import de.haumacher.games.poker.model.TableInfoMsg;
 import de.haumacher.msgbuf.io.StringR;
 import de.haumacher.msgbuf.json.JsonReader;
 
@@ -88,6 +90,12 @@ public class PokerWebSocketHandler extends TextWebSocketHandler {
 				// Chat not implemented yet
 				return null;
 			}
+
+			@Override
+			public Void visit(CreateTableMsg self, PlayerConnection c) {
+				handleCreateTable(c, self);
+				return null;
+			}
 		}, conn);
 	}
 
@@ -107,11 +115,51 @@ public class PokerWebSocketHandler extends TextWebSocketHandler {
 			}
 		}
 
-		String displayName = conn.getSession().getId().substring(0, 8);
-		boolean joined = tableManager.joinTable(tableId, conn, displayName, DEFAULT_BUY_IN, msg.getPreferredSeat());
-		if (!joined) {
-			tableManager.sendError(conn.getSession(), "JOIN_FAILED", "Could not join table");
+		String displayName = msg.getDisplayName();
+		if (displayName == null || displayName.isEmpty()) {
+			displayName = conn.getSession().getId().substring(0, 8);
 		}
+
+		long chips = msg.getChips();
+		if (chips <= 0) {
+			chips = DEFAULT_BUY_IN;
+		}
+
+		int seat = tableManager.joinTable(tableId, conn, displayName, chips, msg.getPreferredSeat());
+		if (seat < 0) {
+			tableManager.sendError(conn.getSession(), "JOIN_FAILED", "Could not join table");
+		} else {
+			TableInfoMsg info = TableInfoMsg.create()
+					.setTableId(tableId)
+					.setRoomCode(tableManager.getRoomCode(tableId))
+					.setSeat(seat)
+					.setSmallBlind(tableManager.getSmallBlind(tableId))
+					.setBigBlind(tableManager.getBigBlind(tableId));
+			tableManager.sendMessage(conn.getSession(), info);
+		}
+	}
+
+	private void handleCreateTable(PlayerConnection conn, CreateTableMsg msg) {
+		long smallBlind = msg.getSmallBlind();
+		long bigBlind = msg.getBigBlind();
+
+		if (smallBlind <= 0) {
+			smallBlind = DEFAULT_SMALL_BLIND;
+			bigBlind = DEFAULT_BIG_BLIND;
+		} else if (bigBlind != 2 * smallBlind) {
+			tableManager.sendError(conn.getSession(), "INVALID_BLINDS", "Big blind must be exactly 2x small blind");
+			return;
+		}
+
+		String tableId = tableManager.createTable(smallBlind, bigBlind);
+
+		TableInfoMsg info = TableInfoMsg.create()
+				.setTableId(tableId)
+				.setRoomCode(tableManager.getRoomCode(tableId))
+				.setSeat(-1)
+				.setSmallBlind(smallBlind)
+				.setBigBlind(bigBlind);
+		tableManager.sendMessage(conn.getSession(), info);
 	}
 
 	@Override

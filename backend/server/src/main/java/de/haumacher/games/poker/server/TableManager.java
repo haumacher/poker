@@ -83,10 +83,20 @@ public class TableManager {
 		return roomCodeToTableId.get(roomCode.toUpperCase());
 	}
 
-	public boolean joinTable(String tableId, PlayerConnection connection, String displayName, long chips, int preferredSeat) {
+	public long getSmallBlind(String tableId) {
+		TableContext ctx = tables.get(tableId);
+		return ctx != null ? ctx.gameSession.getSmallBlind() : 0;
+	}
+
+	public long getBigBlind(String tableId) {
+		TableContext ctx = tables.get(tableId);
+		return ctx != null ? ctx.gameSession.getBigBlind() : 0;
+	}
+
+	public int joinTable(String tableId, PlayerConnection connection, String displayName, long chips, int preferredSeat) {
 		TableContext ctx = tables.get(tableId);
 		if (ctx == null) {
-			return false;
+			return -1;
 		}
 
 		synchronized (ctx) {
@@ -94,12 +104,12 @@ public class TableManager {
 			if (seat < 0 || seat >= GameSession.MAX_SEATS || ctx.gameSession.getPlayer(seat) != null) {
 				seat = findOpenSeat(ctx.gameSession);
 				if (seat < 0) {
-					return false;
+					return -1;
 				}
 			}
 
 			if (!ctx.gameSession.addPlayer(seat, displayName, chips)) {
-				return false;
+				return -1;
 			}
 
 			connection.setTableId(tableId);
@@ -119,7 +129,7 @@ public class TableManager {
 				tryStartHand(ctx);
 			}
 
-			return true;
+			return seat;
 		}
 	}
 

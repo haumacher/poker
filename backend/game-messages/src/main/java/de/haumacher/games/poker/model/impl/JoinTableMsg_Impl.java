@@ -9,6 +9,10 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 
 	private int _preferredSeat = 0;
 
+	private String _displayName = "";
+
+	private long _chips = 0L;
+
 	/**
 	 * Creates a {@link JoinTableMsg_Impl} instance.
 	 *
@@ -60,6 +64,42 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 	}
 
 	@Override
+	public final String getDisplayName() {
+		return _displayName;
+	}
+
+	@Override
+	public de.haumacher.games.poker.model.JoinTableMsg setDisplayName(String value) {
+		internalSetDisplayName(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getDisplayName()} without chain call utility. */
+	protected final void internalSetDisplayName(String value) {
+		_listener.beforeSet(this, DISPLAY_NAME__PROP, value);
+		_displayName = value;
+		_listener.afterChanged(this, DISPLAY_NAME__PROP);
+	}
+
+	@Override
+	public final long getChips() {
+		return _chips;
+	}
+
+	@Override
+	public de.haumacher.games.poker.model.JoinTableMsg setChips(long value) {
+		internalSetChips(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getChips()} without chain call utility. */
+	protected final void internalSetChips(long value) {
+		_listener.beforeSet(this, CHIPS__PROP, value);
+		_chips = value;
+		_listener.afterChanged(this, CHIPS__PROP);
+	}
+
+	@Override
 	public String jsonType() {
 		return JOIN_TABLE_MSG__TYPE;
 	}
@@ -68,7 +108,9 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 	static {
 		java.util.List<String> local = java.util.Arrays.asList(
 			TABLE_ID__PROP, 
-			PREFERRED_SEAT__PROP);
+			PREFERRED_SEAT__PROP, 
+			DISPLAY_NAME__PROP, 
+			CHIPS__PROP);
 		PROPERTIES = java.util.Collections.unmodifiableList(local);
 	}
 
@@ -95,6 +137,8 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 		switch (field) {
 			case TABLE_ID__PROP: return getTableId();
 			case PREFERRED_SEAT__PROP: return getPreferredSeat();
+			case DISPLAY_NAME__PROP: return getDisplayName();
+			case CHIPS__PROP: return getChips();
 			default: return super.get(field);
 		}
 	}
@@ -104,6 +148,8 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 		switch (field) {
 			case TABLE_ID__PROP: internalSetTableId((String) value); break;
 			case PREFERRED_SEAT__PROP: internalSetPreferredSeat((int) value); break;
+			case DISPLAY_NAME__PROP: internalSetDisplayName((String) value); break;
+			case CHIPS__PROP: internalSetChips((long) value); break;
 			default: super.set(field, value); break;
 		}
 	}
@@ -115,6 +161,10 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 		out.value(getTableId());
 		out.name(PREFERRED_SEAT__PROP);
 		out.value(getPreferredSeat());
+		out.name(DISPLAY_NAME__PROP);
+		out.value(getDisplayName());
+		out.name(CHIPS__PROP);
+		out.value(getChips());
 	}
 
 	@Override
@@ -122,6 +172,8 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 		switch (field) {
 			case TABLE_ID__PROP: setTableId(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case PREFERRED_SEAT__PROP: setPreferredSeat(in.nextInt()); break;
+			case DISPLAY_NAME__PROP: setDisplayName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case CHIPS__PROP: setChips(in.nextLong()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -138,6 +190,10 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 		out.value(getTableId());
 		out.name(PREFERRED_SEAT__ID);
 		out.value(getPreferredSeat());
+		out.name(DISPLAY_NAME__ID);
+		out.value(getDisplayName());
+		out.name(CHIPS__ID);
+		out.value(getChips());
 	}
 
 	/** Helper for creating an object of type {@link de.haumacher.games.poker.model.JoinTableMsg} from a polymorphic composition. */
@@ -152,6 +208,8 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 		switch (field) {
 			case TABLE_ID__ID: setTableId(in.nextString()); break;
 			case PREFERRED_SEAT__ID: setPreferredSeat(in.nextInt()); break;
+			case DISPLAY_NAME__ID: setDisplayName(in.nextString()); break;
+			case CHIPS__ID: setChips(in.nextLong()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -165,6 +223,12 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 	/** XML attribute or element name of a {@link #getPreferredSeat} property. */
 	private static final String PREFERRED_SEAT__XML_ATTR = "preferred-seat";
 
+	/** XML attribute or element name of a {@link #getDisplayName} property. */
+	private static final String DISPLAY_NAME__XML_ATTR = "display-name";
+
+	/** XML attribute or element name of a {@link #getChips} property. */
+	private static final String CHIPS__XML_ATTR = "chips";
+
 	@Override
 	public String getXmlTagName() {
 		return JOIN_TABLE_MSG__XML_ELEMENT;
@@ -176,6 +240,8 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 		super.writeAttributes(out);
 		out.writeAttribute(TABLE_ID__XML_ATTR, getTableId());
 		out.writeAttribute(PREFERRED_SEAT__XML_ATTR, Integer.toString(getPreferredSeat()));
+		out.writeAttribute(DISPLAY_NAME__XML_ATTR, getDisplayName());
+		out.writeAttribute(CHIPS__XML_ATTR, Long.toString(getChips()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -203,6 +269,14 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 				setPreferredSeat(Integer.parseInt(value));
 				break;
 			}
+			case DISPLAY_NAME__XML_ATTR: {
+				setDisplayName(value);
+				break;
+			}
+			case CHIPS__XML_ATTR: {
+				setChips(Long.parseLong(value));
+				break;
+			}
 			default: {
 				super.readFieldXmlAttribute(name, value);
 			}
@@ -218,6 +292,14 @@ public class JoinTableMsg_Impl extends de.haumacher.games.poker.model.impl.Clien
 			}
 			case PREFERRED_SEAT__XML_ATTR: {
 				setPreferredSeat(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case DISPLAY_NAME__XML_ATTR: {
+				setDisplayName(in.getElementText());
+				break;
+			}
+			case CHIPS__XML_ATTR: {
+				setChips(Long.parseLong(in.getElementText()));
 				break;
 			}
 			default: {
