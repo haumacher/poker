@@ -21,10 +21,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <msgbuf.version>1.1.11</msgbuf.version>
         <junit.version>5.11.4</junit.version>
+        <spring-boot.version>3.4.3</spring-boot.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>de.haumacher.msgbuf</groupId>
                 <artifactId>msgbuf-api</artifactId>
@@ -46,6 +54,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>3.4.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
