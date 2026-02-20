@@ -447,7 +447,7 @@ public class GameSession {
 				continue;
 			}
 
-			// Evaluate hands
+			// Evaluate hands and find the best
 			EvaluatedHand bestHand = null;
 			List<Integer> winners = new ArrayList<>();
 
@@ -463,6 +463,11 @@ public class GameSession {
 				} else if (eval.compareTo(bestHand) == 0) {
 					winners.add(s);
 				}
+			}
+
+			if (bestHand == null) {
+				// Cannot happen — contenders has at least 2 entries here
+				continue;
 			}
 
 			// Split pot among winners
