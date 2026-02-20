@@ -1,0 +1,138 @@
+package de.haumacher.games.poker.model;
+
+enum Rank {
+	TWO = 0;
+	THREE = 1;
+	FOUR = 2;
+	FIVE = 3;
+	SIX = 4;
+	SEVEN = 5;
+	EIGHT = 6;
+	NINE = 7;
+	TEN = 8;
+	JACK = 9;
+	QUEEN = 10;
+	KING = 11;
+	ACE = 12;
+}
+
+enum Suit {
+	HEARTS = 0;
+	DIAMONDS = 1;
+	CLUBS = 2;
+	SPADES = 3;
+}
+
+enum Phase {
+	WAITING_FOR_PLAYERS = 0;
+	PRE_FLOP = 1;
+	FLOP = 2;
+	TURN = 3;
+	RIVER = 4;
+	SHOWDOWN = 5;
+}
+
+enum ActionType {
+	FOLD = 0;
+	CHECK = 1;
+	CALL = 2;
+	RAISE = 3;
+	ALL_IN = 4;
+}
+
+enum PlayerStatus {
+	WAITING = 0;
+	ACTIVE = 1;
+	FOLDED = 2;
+	ALL_IN = 3;
+	SITTING_OUT = 4;
+}
+
+message Card {
+	Rank rank;
+	Suit suit;
+}
+
+message PlayerState {
+	int seat;
+	string displayName;
+	long chips;
+	long currentBet;
+	PlayerStatus status;
+	ActionType lastAction;
+}
+
+message SidePot {
+	long amount;
+	repeated int eligibleSeats;
+}
+
+message WinnerInfo {
+	int seat;
+	long amount;
+	string handDescription;
+}
+
+/** Server to client messages. */
+abstract message ServerMessage {
+	/* No common fields. */
+}
+
+message GameStateMsg extends ServerMessage {
+	string tableId;
+	int handNumber;
+	Phase phase;
+	repeated Card communityCards;
+	long pot;
+	repeated SidePot sidePots;
+	int currentPlayerSeat;
+	int dealerSeat;
+	repeated PlayerState players;
+	int turnTimeRemaining;
+	long minRaise;
+}
+
+message HoleCardsMsg extends ServerMessage {
+	int handNumber;
+	repeated Card cards;
+}
+
+message HandResultMsg extends ServerMessage {
+	repeated WinnerInfo winners;
+}
+
+message ErrorMsg extends ServerMessage {
+	string code;
+	string `message`;
+}
+
+message PlayerJoinedMsg extends ServerMessage {
+	PlayerState playerState;
+}
+
+message PlayerLeftMsg extends ServerMessage {
+	int seat;
+}
+
+/** Client to server messages. */
+abstract message ClientMessage {
+	/* No common fields. */
+}
+
+message PlayerActionMsg extends ClientMessage {
+	ActionType actionType;
+	long amount;
+}
+
+message JoinTableMsg extends ClientMessage {
+	string tableId;
+	int preferredSeat;
+}
+
+message LeaveTableMsg extends ClientMessage {
+	/* No fields. */
+}
+
+message ChatMsg extends ClientMessage {
+	string text;
+}
