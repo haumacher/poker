@@ -26,7 +26,15 @@ class MessageDispatcher {
   MessageDispatcher(this._ref);
 
   void start() {
+    _messageSub?.cancel();
+    _statusSub?.cancel();
+
     final ws = _ref.read(websocketServiceProvider);
+
+    // Set initial status from current state — the broadcast stream event
+    // from connect() may have already fired before we subscribed.
+    _ref.read(connectionStatusProvider.notifier).state =
+        ws.isConnected ? ConnectionStatus.connected : ConnectionStatus.disconnected;
 
     _statusSub = ws.connectionStatus.listen((connected) {
       _ref.read(connectionStatusProvider.notifier).state =
