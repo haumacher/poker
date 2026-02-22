@@ -22,6 +22,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _roomCodeController = TextEditingController();
   int _selectedBlindIndex = 0;
   bool _loading = false;
+  bool _displayNameValid = false;
+  bool _displayNameTouched = false;
   String _serverHost = 'localhost:8080';
 
   static const _blindPresets = [
@@ -31,7 +33,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _displayNameController.addListener(_onDisplayNameChanged);
+  }
+
+  void _onDisplayNameChanged() {
+    final valid = _displayNameController.text.trim().isNotEmpty;
+    if (valid != _displayNameValid) {
+      setState(() => _displayNameValid = valid);
+    }
+  }
+
+  @override
   void dispose() {
+    _displayNameController.removeListener(_onDisplayNameChanged);
     _displayNameController.dispose();
     _roomCodeController.dispose();
     super.dispose();
@@ -167,8 +183,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Display name
               TextField(
                 controller: _displayNameController,
-                decoration: const InputDecoration(labelText: 'Display Name'),
+                decoration: InputDecoration(
+                  labelText: 'Display Name *',
+                  errorText: _displayNameTouched && !_displayNameValid
+                      ? 'Display name is required'
+                      : null,
+                ),
                 textCapitalization: TextCapitalization.words,
+                onChanged: (_) {
+                  if (!_displayNameTouched) {
+                    setState(() => _displayNameTouched = true);
+                  }
+                },
               ),
               const SizedBox(height: 32),
 
@@ -188,7 +214,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 12),
               ElevatedButton(
-                onPressed: _loading ? null : _createTable,
+                onPressed: _loading || !_displayNameValid ? null : _createTable,
                 child: _loading
                     ? const SizedBox(
                         height: 20,
@@ -213,7 +239,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 4),
               ElevatedButton(
-                onPressed: _loading ? null : _joinTable,
+                onPressed: _loading || !_displayNameValid ? null : _joinTable,
                 child: const Text('Join Table'),
               ),
 
