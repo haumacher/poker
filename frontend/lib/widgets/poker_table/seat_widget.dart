@@ -47,13 +47,15 @@ class SeatWidget extends ConsumerWidget {
       width: 120,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: isCurrentTurn
-            ? Colors.amber.withValues(alpha: 0.2)
-            : Colors.black54,
+        color: isWinner
+            ? Colors.orange.withValues(alpha: 0.2)
+            : isCurrentTurn
+                ? Colors.amber.withValues(alpha: 0.2)
+                : Colors.black54,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isCurrentTurn ? Colors.amber : Colors.white24,
-          width: isCurrentTurn ? 2 : 1,
+          color: isWinner ? Colors.orange : isCurrentTurn ? Colors.amber : Colors.white24,
+          width: isWinner || isCurrentTurn ? 2 : 1,
         ),
       ),
       child: Column(
