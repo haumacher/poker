@@ -21,6 +21,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _displayNameController = TextEditingController(text: '');
   final _roomCodeController = TextEditingController();
   int _selectedBlindIndex = 0;
+  int _selectedTimeoutIndex = 1;
   bool _loading = false;
   bool _displayNameValid = false;
   bool _displayNameTouched = false;
@@ -30,6 +31,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     (small: 5, big: 10),
     (small: 10, big: 20),
     (small: 25, big: 50),
+  ];
+
+  static const _timeoutPresets = [
+    (label: 'No Limit', seconds: -1),
+    (label: '30s', seconds: 30),
+    (label: '60s', seconds: 60),
   ];
 
   @override
@@ -61,7 +68,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(messageDispatcherProvider).start();
 
       final blind = _blindPresets[_selectedBlindIndex];
-      ws.send(CreateTableMsg(smallBlind: blind.small, bigBlind: blind.big));
+      final timeout = _timeoutPresets[_selectedTimeoutIndex];
+      ws.send(CreateTableMsg(
+        smallBlind: blind.small,
+        bigBlind: blind.big,
+        turnTimeoutSeconds: timeout.seconds,
+      ));
 
       // Wait for TableInfoMsg from create
       final tableInfo = await _waitForTableInfo();
@@ -211,6 +223,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
                 selected: {_selectedBlindIndex},
                 onSelectionChanged: (s) => setState(() => _selectedBlindIndex = s.first),
+              ),
+              const SizedBox(height: 12),
+              Text('Turn Timer', style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 4),
+              SegmentedButton<int>(
+                segments: [
+                  for (var i = 0; i < _timeoutPresets.length; i++)
+                    ButtonSegment(
+                      value: i,
+                      label: Text(_timeoutPresets[i].label),
+                    ),
+                ],
+                selected: {_selectedTimeoutIndex},
+                onSelectionChanged: (s) => setState(() => _selectedTimeoutIndex = s.first),
               ),
               const SizedBox(height: 12),
               ElevatedButton(

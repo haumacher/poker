@@ -9,6 +9,8 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 
 	private long _bigBlind = 0L;
 
+	private int _turnTimeoutSeconds = 0;
+
 	/**
 	 * Creates a {@link CreateTableMsg_Impl} instance.
 	 *
@@ -60,6 +62,24 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 	}
 
 	@Override
+	public final int getTurnTimeoutSeconds() {
+		return _turnTimeoutSeconds;
+	}
+
+	@Override
+	public de.haumacher.games.poker.model.CreateTableMsg setTurnTimeoutSeconds(int value) {
+		internalSetTurnTimeoutSeconds(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getTurnTimeoutSeconds()} without chain call utility. */
+	protected final void internalSetTurnTimeoutSeconds(int value) {
+		_listener.beforeSet(this, TURN_TIMEOUT_SECONDS__PROP, value);
+		_turnTimeoutSeconds = value;
+		_listener.afterChanged(this, TURN_TIMEOUT_SECONDS__PROP);
+	}
+
+	@Override
 	public String jsonType() {
 		return CREATE_TABLE_MSG__TYPE;
 	}
@@ -68,7 +88,8 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 	static {
 		java.util.List<String> local = java.util.Arrays.asList(
 			SMALL_BLIND__PROP, 
-			BIG_BLIND__PROP);
+			BIG_BLIND__PROP, 
+			TURN_TIMEOUT_SECONDS__PROP);
 		PROPERTIES = java.util.Collections.unmodifiableList(local);
 	}
 
@@ -95,6 +116,7 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 		switch (field) {
 			case SMALL_BLIND__PROP: return getSmallBlind();
 			case BIG_BLIND__PROP: return getBigBlind();
+			case TURN_TIMEOUT_SECONDS__PROP: return getTurnTimeoutSeconds();
 			default: return super.get(field);
 		}
 	}
@@ -104,6 +126,7 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 		switch (field) {
 			case SMALL_BLIND__PROP: internalSetSmallBlind((long) value); break;
 			case BIG_BLIND__PROP: internalSetBigBlind((long) value); break;
+			case TURN_TIMEOUT_SECONDS__PROP: internalSetTurnTimeoutSeconds((int) value); break;
 			default: super.set(field, value); break;
 		}
 	}
@@ -115,6 +138,8 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 		out.value(getSmallBlind());
 		out.name(BIG_BLIND__PROP);
 		out.value(getBigBlind());
+		out.name(TURN_TIMEOUT_SECONDS__PROP);
+		out.value(getTurnTimeoutSeconds());
 	}
 
 	@Override
@@ -122,6 +147,7 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 		switch (field) {
 			case SMALL_BLIND__PROP: setSmallBlind(in.nextLong()); break;
 			case BIG_BLIND__PROP: setBigBlind(in.nextLong()); break;
+			case TURN_TIMEOUT_SECONDS__PROP: setTurnTimeoutSeconds(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -138,6 +164,8 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 		out.value(getSmallBlind());
 		out.name(BIG_BLIND__ID);
 		out.value(getBigBlind());
+		out.name(TURN_TIMEOUT_SECONDS__ID);
+		out.value(getTurnTimeoutSeconds());
 	}
 
 	/** Helper for creating an object of type {@link de.haumacher.games.poker.model.CreateTableMsg} from a polymorphic composition. */
@@ -152,6 +180,7 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 		switch (field) {
 			case SMALL_BLIND__ID: setSmallBlind(in.nextLong()); break;
 			case BIG_BLIND__ID: setBigBlind(in.nextLong()); break;
+			case TURN_TIMEOUT_SECONDS__ID: setTurnTimeoutSeconds(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -165,6 +194,9 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 	/** XML attribute or element name of a {@link #getBigBlind} property. */
 	private static final String BIG_BLIND__XML_ATTR = "big-blind";
 
+	/** XML attribute or element name of a {@link #getTurnTimeoutSeconds} property. */
+	private static final String TURN_TIMEOUT_SECONDS__XML_ATTR = "turn-timeout-seconds";
+
 	@Override
 	public String getXmlTagName() {
 		return CREATE_TABLE_MSG__XML_ELEMENT;
@@ -176,6 +208,7 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 		super.writeAttributes(out);
 		out.writeAttribute(SMALL_BLIND__XML_ATTR, Long.toString(getSmallBlind()));
 		out.writeAttribute(BIG_BLIND__XML_ATTR, Long.toString(getBigBlind()));
+		out.writeAttribute(TURN_TIMEOUT_SECONDS__XML_ATTR, Integer.toString(getTurnTimeoutSeconds()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -203,6 +236,10 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 				setBigBlind(Long.parseLong(value));
 				break;
 			}
+			case TURN_TIMEOUT_SECONDS__XML_ATTR: {
+				setTurnTimeoutSeconds(Integer.parseInt(value));
+				break;
+			}
 			default: {
 				super.readFieldXmlAttribute(name, value);
 			}
@@ -218,6 +255,10 @@ public class CreateTableMsg_Impl extends de.haumacher.games.poker.model.impl.Cli
 			}
 			case BIG_BLIND__XML_ATTR: {
 				setBigBlind(Long.parseLong(in.getElementText()));
+				break;
+			}
+			case TURN_TIMEOUT_SECONDS__XML_ATTR: {
+				setTurnTimeoutSeconds(Integer.parseInt(in.getElementText()));
 				break;
 			}
 			default: {

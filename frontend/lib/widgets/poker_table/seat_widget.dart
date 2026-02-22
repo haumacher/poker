@@ -12,6 +12,7 @@ class SeatWidget extends ConsumerWidget {
   final bool isDealer;
   final bool isCurrentTurn;
   final bool isLocalPlayer;
+  final int turnTimeRemaining;
 
   const SeatWidget({
     super.key,
@@ -20,6 +21,7 @@ class SeatWidget extends ConsumerWidget {
     this.isDealer = false,
     this.isCurrentTurn = false,
     this.isLocalPlayer = false,
+    this.turnTimeRemaining = 0,
   });
 
   @override
@@ -75,6 +77,21 @@ class SeatWidget extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 2),
+
+          // Turn timer badge
+          if (isCurrentTurn && turnTimeRemaining > 0)
+            Container(
+              margin: const EdgeInsets.only(bottom: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: turnTimeRemaining <= 10 ? Colors.red : Colors.orange,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                '${turnTimeRemaining}s',
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
 
           // Chips
           Text(

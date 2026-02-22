@@ -1137,6 +1137,9 @@ class TableInfoMsg extends ServerMessage {
 	///  Big blind amount for this table.
 	int bigBlind;
 
+	///  Seconds per turn. 0 means no timeout.
+	int turnTimeoutSeconds;
+
 	/// Creates a TableInfoMsg.
 	TableInfoMsg({
 			this.tableId = "",
@@ -1144,6 +1147,7 @@ class TableInfoMsg extends ServerMessage {
 			this.seat = 0,
 			this.smallBlind = 0,
 			this.bigBlind = 0,
+			this.turnTimeoutSeconds = 0,
 	});
 
 	/// Parses a TableInfoMsg from a string source.
@@ -1184,6 +1188,10 @@ class TableInfoMsg extends ServerMessage {
 				bigBlind = json.expectInt();
 				break;
 			}
+			case "turnTimeoutSeconds": {
+				turnTimeoutSeconds = json.expectInt();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -1206,6 +1214,9 @@ class TableInfoMsg extends ServerMessage {
 
 		json.addKey("bigBlind");
 		json.addNumber(bigBlind);
+
+		json.addKey("turnTimeoutSeconds");
+		json.addNumber(turnTimeoutSeconds);
 	}
 
 	@override
@@ -1493,10 +1504,14 @@ class CreateTableMsg extends ClientMessage {
 	///  Big blind amount. Must be exactly 2x smallBlind.
 	int bigBlind;
 
+	///  Seconds per turn. 0 means no timeout.
+	int turnTimeoutSeconds;
+
 	/// Creates a CreateTableMsg.
 	CreateTableMsg({
 			this.smallBlind = 0,
 			this.bigBlind = 0,
+			this.turnTimeoutSeconds = 0,
 	});
 
 	/// Parses a CreateTableMsg from a string source.
@@ -1525,6 +1540,10 @@ class CreateTableMsg extends ClientMessage {
 				bigBlind = json.expectInt();
 				break;
 			}
+			case "turnTimeoutSeconds": {
+				turnTimeoutSeconds = json.expectInt();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -1538,6 +1557,9 @@ class CreateTableMsg extends ClientMessage {
 
 		json.addKey("bigBlind");
 		json.addNumber(bigBlind);
+
+		json.addKey("turnTimeoutSeconds");
+		json.addNumber(turnTimeoutSeconds);
 	}
 
 	@override

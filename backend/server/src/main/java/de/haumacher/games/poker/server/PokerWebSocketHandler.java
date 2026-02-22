@@ -30,6 +30,7 @@ public class PokerWebSocketHandler extends TextWebSocketHandler {
 	private static final long DEFAULT_BUY_IN = 1000;
 	private static final long DEFAULT_SMALL_BLIND = 5;
 	private static final long DEFAULT_BIG_BLIND = 10;
+	private static final int DEFAULT_TURN_TIMEOUT_SECONDS = 30;
 
 	private final TableManager tableManager;
 	private final Map<String, PlayerConnection> connections = new ConcurrentHashMap<>();
@@ -107,7 +108,7 @@ public class PokerWebSocketHandler extends TextWebSocketHandler {
 
 		String tableId = msg.getTableId();
 		if (tableId == null || tableId.isEmpty()) {
-			tableId = tableManager.createTable(DEFAULT_SMALL_BLIND, DEFAULT_BIG_BLIND);
+			tableId = tableManager.createTable(DEFAULT_SMALL_BLIND, DEFAULT_BIG_BLIND, DEFAULT_TURN_TIMEOUT_SECONDS);
 		} else if (tableId.length() == 6) {
 			String resolved = tableManager.resolveRoomCode(tableId);
 			if (resolved != null) {
@@ -134,7 +135,8 @@ public class PokerWebSocketHandler extends TextWebSocketHandler {
 					.setRoomCode(tableManager.getRoomCode(tableId))
 					.setSeat(seat)
 					.setSmallBlind(tableManager.getSmallBlind(tableId))
-					.setBigBlind(tableManager.getBigBlind(tableId));
+					.setBigBlind(tableManager.getBigBlind(tableId))
+					.setTurnTimeoutSeconds(tableManager.getTurnTimeoutSeconds(tableId));
 			tableManager.sendMessage(conn.getSession(), info);
 		}
 	}
@@ -151,14 +153,23 @@ public class PokerWebSocketHandler extends TextWebSocketHandler {
 			return;
 		}
 
-		String tableId = tableManager.createTable(smallBlind, bigBlind);
+		// turnTimeoutSeconds: negative = no timeout, 0 = use default (backward compat), positive = explicit
+		int turnTimeoutSeconds = msg.getTurnTimeoutSeconds();
+		if (turnTimeoutSeconds < 0) {
+			turnTimeoutSeconds = 0; // 0 internally means no timeout
+		} else if (turnTimeoutSeconds == 0) {
+			turnTimeoutSeconds = DEFAULT_TURN_TIMEOUT_SECONDS;
+		}
+
+		String tableId = tableManager.createTable(smallBlind, bigBlind, turnTimeoutSeconds);
 
 		TableInfoMsg info = TableInfoMsg.create()
 				.setTableId(tableId)
 				.setRoomCode(tableManager.getRoomCode(tableId))
 				.setSeat(-1)
 				.setSmallBlind(smallBlind)
-				.setBigBlind(bigBlind);
+				.setBigBlind(bigBlind)
+				.setTurnTimeoutSeconds(turnTimeoutSeconds);
 		tableManager.sendMessage(conn.getSession(), info);
 	}
 

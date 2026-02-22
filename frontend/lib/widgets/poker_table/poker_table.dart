@@ -110,6 +110,8 @@ class PokerTable extends StatelessWidget {
 
       final player = _playerAtSeat(seatIndex);
 
+      final isCurrentTurn = gameState?.currentPlayerSeat == seatIndex;
+
       widgets.add(
         Positioned(
           left: x,
@@ -118,8 +120,9 @@ class PokerTable extends StatelessWidget {
             player: player,
             seatIndex: seatIndex,
             isDealer: gameState?.dealerSeat == seatIndex,
-            isCurrentTurn: gameState?.currentPlayerSeat == seatIndex,
+            isCurrentTurn: isCurrentTurn,
             isLocalPlayer: seatIndex == mySeat,
+            turnTimeRemaining: isCurrentTurn ? (gameState?.turnTimeRemaining ?? 0) : 0,
           ),
         ),
       );

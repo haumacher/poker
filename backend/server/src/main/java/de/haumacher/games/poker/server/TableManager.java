@@ -44,7 +44,6 @@ public class TableManager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TableManager.class);
 
-	private static final int TURN_TIMEOUT_SECONDS = 30;
 	private static final String ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 	private final Map<String, TableContext> tables = new ConcurrentHashMap<>();
@@ -61,16 +60,16 @@ public class TableManager {
 		scheduler.shutdownNow();
 	}
 
-	public String createTable(long smallBlind, long bigBlind) {
+	public String createTable(long smallBlind, long bigBlind, int turnTimeoutSeconds) {
 		String tableId = java.util.UUID.randomUUID().toString();
 		String roomCode = generateRoomCode();
 
 		GameSession gameSession = new GameSession(smallBlind, bigBlind, random);
-		TableContext ctx = new TableContext(tableId, roomCode, gameSession);
+		TableContext ctx = new TableContext(tableId, roomCode, gameSession, turnTimeoutSeconds);
 		tables.put(tableId, ctx);
 		roomCodeToTableId.put(roomCode, tableId);
 
-		LOG.info("Table created: {} (room code: {})", tableId, roomCode);
+		LOG.info("Table created: {} (room code: {}, timeout: {}s)", tableId, roomCode, turnTimeoutSeconds);
 		return tableId;
 	}
 
@@ -91,6 +90,11 @@ public class TableManager {
 	public long getBigBlind(String tableId) {
 		TableContext ctx = tables.get(tableId);
 		return ctx != null ? ctx.gameSession.getBigBlind() : 0;
+	}
+
+	public int getTurnTimeoutSeconds(String tableId) {
+		TableContext ctx = tables.get(tableId);
+		return ctx != null ? ctx.turnTimeoutSeconds : 0;
 	}
 
 	public int joinTable(String tableId, PlayerConnection connection, String displayName, long chips, int preferredSeat) {
@@ -253,14 +257,19 @@ public class TableManager {
 	}
 
 	private void scheduleTurnTimer(TableContext ctx) {
+		if (ctx.turnTimeoutSeconds <= 0) {
+			return;
+		}
+		ctx.turnStartedAtMillis = System.currentTimeMillis();
 		ctx.turnTimerFuture = scheduler.schedule(() -> {
 			synchronized (ctx) {
 				ctx.gameSession.handleTimeout();
 			}
-		}, TURN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+		}, ctx.turnTimeoutSeconds, TimeUnit.SECONDS);
 	}
 
 	private void cancelTurnTimer(TableContext ctx) {
+		ctx.turnStartedAtMillis = 0;
 		if (ctx.turnTimerFuture != null) {
 			ctx.turnTimerFuture.cancel(false);
 			ctx.turnTimerFuture = null;
@@ -351,6 +360,12 @@ public class TableManager {
 			msg.addSidePot(sp);
 		}
 
+		if (ctx.turnStartedAtMillis > 0 && ctx.turnTimeoutSeconds > 0) {
+			long elapsed = (System.currentTimeMillis() - ctx.turnStartedAtMillis) / 1000;
+			int remaining = (int) Math.max(0, ctx.turnTimeoutSeconds - elapsed);
+			msg.setTurnTimeRemaining(remaining);
+		}
+
 		for (int i = 0; i < GameSession.MAX_SEATS; i++) {
 			PlayerSession ps = gs.getPlayer(i);
 			if (ps != null) {
@@ -390,14 +405,17 @@ public class TableManager {
 		final String tableId;
 		final String roomCode;
 		final GameSession gameSession;
+		final int turnTimeoutSeconds;
 		final Map<String, PlayerConnection> connections = new ConcurrentHashMap<>();
 		volatile ScheduledFuture<?> turnTimerFuture;
+		volatile long turnStartedAtMillis;
 		boolean listenerSet;
 
-		TableContext(String tableId, String roomCode, GameSession gameSession) {
+		TableContext(String tableId, String roomCode, GameSession gameSession, int turnTimeoutSeconds) {
 			this.tableId = tableId;
 			this.roomCode = roomCode;
 			this.gameSession = gameSession;
+			this.turnTimeoutSeconds = turnTimeoutSeconds;
 		}
 	}
 }

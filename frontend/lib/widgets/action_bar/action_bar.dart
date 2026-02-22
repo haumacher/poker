@@ -73,6 +73,18 @@ class _ActionBarState extends State<ActionBar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (_isMyTurn && widget.gameState!.turnTimeRemaining > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                '${widget.gameState!.turnTimeRemaining}s',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: widget.gameState!.turnTimeRemaining <= 10 ? Colors.red : Colors.orange,
+                ),
+              ),
+            ),
           if (_showRaiseSlider) _buildRaiseSlider(),
           Row(
             children: [

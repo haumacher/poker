@@ -32,6 +32,9 @@ public interface TableInfoMsg extends ServerMessage {
 	/** @see #getBigBlind() */
 	String BIG_BLIND__PROP = "bigBlind";
 
+	/** @see #getTurnTimeoutSeconds() */
+	String TURN_TIMEOUT_SECONDS__PROP = "turnTimeoutSeconds";
+
 	/** Identifier for the {@link de.haumacher.games.poker.model.TableInfoMsg} type in binary format. */
 	static final int TABLE_INFO_MSG__TYPE_ID = 7;
 
@@ -49,6 +52,9 @@ public interface TableInfoMsg extends ServerMessage {
 
 	/** Identifier for the property {@link #getBigBlind()} in binary format. */
 	static final int BIG_BLIND__ID = 5;
+
+	/** Identifier for the property {@link #getTurnTimeoutSeconds()} in binary format. */
+	static final int TURN_TIMEOUT_SECONDS__ID = 6;
 
 	/**
 	 * Unique identifier of the table.
@@ -99,6 +105,16 @@ public interface TableInfoMsg extends ServerMessage {
 	 * @see #getBigBlind()
 	 */
 	de.haumacher.games.poker.model.TableInfoMsg setBigBlind(long value);
+
+	/**
+	 * Seconds per turn. 0 means no timeout.
+	 */
+	int getTurnTimeoutSeconds();
+
+	/**
+	 * @see #getTurnTimeoutSeconds()
+	 */
+	de.haumacher.games.poker.model.TableInfoMsg setTurnTimeoutSeconds(int value);
 
 	/** Reads a new instance from the given reader. */
 	static de.haumacher.games.poker.model.TableInfoMsg readTableInfoMsg(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {

@@ -275,6 +275,9 @@ message TableInfoMsg extends ServerMessage {
 
 	/** Big blind amount for this table. */
 	long bigBlind;
+
+	/** Seconds per turn. 0 means no timeout. */
+	int turnTimeoutSeconds;
 }
 
 /* ============================================================================
@@ -332,4 +335,7 @@ message CreateTableMsg extends ClientMessage {
 
 	/** Big blind amount. Must be exactly 2x smallBlind. */
 	long bigBlind;
+
+	/** Seconds per turn. 0 means no timeout. */
+	int turnTimeoutSeconds;
 }
