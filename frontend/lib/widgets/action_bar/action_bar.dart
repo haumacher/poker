@@ -34,6 +34,8 @@ class _ActionBarState extends State<ActionBar> {
   bool get _isActiveInHand {
     final me = _myPlayerState;
     if (me == null) return false;
+    final phase = widget.gameState?.phase;
+    if (phase == null || phase == Phase.waitingForPlayers || phase == Phase.showdown) return false;
     return me.status == PlayerStatus.active;
   }
 
@@ -177,6 +179,25 @@ class _ActionBarState extends State<ActionBar> {
     }
 
     if (!_isMyTurn && !_isActiveInHand) {
+      final phase = widget.gameState?.phase;
+      if (phase == Phase.waitingForPlayers && widget.mySeat >= 0) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A1A1A),
+            border: Border(top: BorderSide(color: Colors.white12)),
+          ),
+          child: const SizedBox(
+            height: 44,
+            child: Center(
+              child: Text(
+                'Waiting for other players...',
+                style: TextStyle(color: Colors.white54, fontSize: 14),
+              ),
+            ),
+          ),
+        );
+      }
       return const SizedBox(height: 60);
     }
 
