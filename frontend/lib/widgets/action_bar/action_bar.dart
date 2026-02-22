@@ -225,106 +225,131 @@ class _ActionBarState extends State<ActionBar> {
               ),
             ),
           if (_showRaiseSlider) _buildRaiseSlider(isPreSelecting),
-          Row(
-            children: [
-              // Fold
-              Expanded(
-                child: _actionButton(
-                  label: 'Fold',
-                  color: Colors.red.shade700,
-                  outlined: isPreSelecting,
-                  selected: _preSelectedAction == ActionType.fold,
-                  onPressed: isPreSelecting
-                      ? () => _togglePreSelection(ActionType.fold)
-                      : () => widget.onAction(ActionType.fold, 0),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Check or Call
-              Expanded(
-                child: _canCheck
-                    ? _actionButton(
-                        label: 'Check',
-                        color: Colors.blue.shade700,
-                        outlined: isPreSelecting,
-                        selected: _preSelectedAction == ActionType.check,
-                        onPressed: isPreSelecting
-                            ? () => _togglePreSelection(ActionType.check)
-                            : () => widget.onAction(ActionType.check, 0),
-                      )
-                    : _actionButton(
-                        label: 'Call $_callAmount',
-                        color: Colors.blue.shade700,
-                        outlined: isPreSelecting,
-                        selected: _preSelectedAction == ActionType.call,
-                        onPressed: _canAffordCall
-                            ? (isPreSelecting
-                                ? () => _togglePreSelection(ActionType.call)
-                                : () => widget.onAction(ActionType.call, 0))
-                            : null,
-                      ),
-              ),
-              const SizedBox(width: 8),
-
-              // Raise
-              if (_canRaise)
+          if (_showRaiseSlider)
+            // Cancel / Confirm only when slider is visible
+            Row(
+              children: [
                 Expanded(
                   child: _actionButton(
-                    label: _showRaiseSlider ? 'Confirm' : 'Raise',
+                    label: 'Cancel',
+                    color: Colors.red.shade700,
+                    onPressed: () {
+                      setState(() {
+                        _showRaiseSlider = false;
+                        if (_preSelectedAction == ActionType.raise) {
+                          _preSelectedAction = null;
+                          _preSelectedRaiseAmount = 0;
+                        }
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _actionButton(
+                    label: 'Confirm ${_raiseSliderValue.toInt()}',
                     color: Colors.green.shade700,
-                    outlined: isPreSelecting,
-                    selected: _preSelectedAction == ActionType.raise,
                     onPressed: isPreSelecting
                         ? () {
-                            if (_showRaiseSlider && _preSelectedAction == ActionType.raise) {
-                              // Confirm the raise amount
-                              setState(() {
-                                _preSelectedRaiseAmount = _raiseSliderValue.toInt();
-                                _showRaiseSlider = false;
-                              });
-                            } else if (_preSelectedAction == ActionType.raise) {
-                              // Deselect raise
-                              _togglePreSelection(ActionType.raise);
-                            } else {
-                              // Select raise and show slider
-                              setState(() {
-                                _raiseSliderValue = _minRaiseTotal.toDouble();
-                                _showRaiseSlider = true;
-                                _preSelectedAction = ActionType.raise;
-                                _preSelectedRaiseAmount = _minRaiseTotal;
-                              });
-                            }
+                            setState(() {
+                              _preSelectedAction = ActionType.raise;
+                              _preSelectedRaiseAmount = _raiseSliderValue.toInt();
+                              _showRaiseSlider = false;
+                            });
                           }
                         : () {
-                            if (_showRaiseSlider) {
-                              widget.onAction(ActionType.raise, _raiseSliderValue.toInt());
-                              setState(() => _showRaiseSlider = false);
-                            } else {
-                              setState(() {
-                                _raiseSliderValue = _minRaiseTotal.toDouble();
-                                _showRaiseSlider = true;
-                              });
-                            }
+                            widget.onAction(ActionType.raise, _raiseSliderValue.toInt());
+                            setState(() => _showRaiseSlider = false);
                           },
                   ),
                 ),
-              const SizedBox(width: 8),
-
-              // All-In
-              Expanded(
-                child: _actionButton(
-                  label: 'All In',
-                  color: Colors.orange.shade800,
-                  outlined: isPreSelecting,
-                  selected: _preSelectedAction == ActionType.allIn,
-                  onPressed: isPreSelecting
-                      ? () => _togglePreSelection(ActionType.allIn)
-                      : () => widget.onAction(ActionType.allIn, 0),
+              ],
+            )
+          else
+            Row(
+              children: [
+                // Fold
+                Expanded(
+                  child: _actionButton(
+                    label: 'Fold',
+                    color: Colors.red.shade700,
+                    outlined: isPreSelecting,
+                    selected: _preSelectedAction == ActionType.fold,
+                    onPressed: isPreSelecting
+                        ? () => _togglePreSelection(ActionType.fold)
+                        : () => widget.onAction(ActionType.fold, 0),
+                  ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 8),
+
+                // Check or Call
+                Expanded(
+                  child: _canCheck
+                      ? _actionButton(
+                          label: 'Check',
+                          color: Colors.blue.shade700,
+                          outlined: isPreSelecting,
+                          selected: _preSelectedAction == ActionType.check,
+                          onPressed: isPreSelecting
+                              ? () => _togglePreSelection(ActionType.check)
+                              : () => widget.onAction(ActionType.check, 0),
+                        )
+                      : _actionButton(
+                          label: 'Call $_callAmount',
+                          color: Colors.blue.shade700,
+                          outlined: isPreSelecting,
+                          selected: _preSelectedAction == ActionType.call,
+                          onPressed: _canAffordCall
+                              ? (isPreSelecting
+                                  ? () => _togglePreSelection(ActionType.call)
+                                  : () => widget.onAction(ActionType.call, 0))
+                              : null,
+                        ),
+                ),
+                const SizedBox(width: 8),
+
+                // Raise
+                if (_canRaise)
+                  Expanded(
+                    child: _actionButton(
+                      label: 'Raise',
+                      color: Colors.green.shade700,
+                      outlined: isPreSelecting,
+                      selected: _preSelectedAction == ActionType.raise,
+                      onPressed: () {
+                        if (isPreSelecting && _preSelectedAction == ActionType.raise) {
+                          // Deselect raise
+                          _togglePreSelection(ActionType.raise);
+                        } else {
+                          // Show slider
+                          setState(() {
+                            _raiseSliderValue = _minRaiseTotal.toDouble();
+                            _showRaiseSlider = true;
+                            if (isPreSelecting) {
+                              _preSelectedAction = ActionType.raise;
+                              _preSelectedRaiseAmount = _minRaiseTotal;
+                            }
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                const SizedBox(width: 8),
+
+                // All-In
+                Expanded(
+                  child: _actionButton(
+                    label: 'All In',
+                    color: Colors.orange.shade800,
+                    outlined: isPreSelecting,
+                    selected: _preSelectedAction == ActionType.allIn,
+                    onPressed: isPreSelecting
+                        ? () => _togglePreSelection(ActionType.allIn)
+                        : () => widget.onAction(ActionType.allIn, 0),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
