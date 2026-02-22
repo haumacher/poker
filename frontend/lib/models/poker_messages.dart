@@ -1230,6 +1230,7 @@ abstract class ClientMessageVisitor<R, A> {
 	R visitJoinTableMsg(JoinTableMsg self, A arg);
 	R visitLeaveTableMsg(LeaveTableMsg self, A arg);
 	R visitChatMsg(ChatMsg self, A arg);
+	R visitConfirmResultMsg(ConfirmResultMsg self, A arg);
 	R visitCreateTableMsg(CreateTableMsg self, A arg);
 }
 
@@ -1257,6 +1258,7 @@ abstract class ClientMessage extends _JsonObject {
 			case "JoinTableMsg": result = JoinTableMsg(); break;
 			case "LeaveTableMsg": result = LeaveTableMsg(); break;
 			case "ChatMsg": result = ChatMsg(); break;
+			case "ConfirmResultMsg": result = ConfirmResultMsg(); break;
 			case "CreateTableMsg": result = CreateTableMsg(); break;
 			default: result = null;
 		}
@@ -1493,6 +1495,31 @@ class ChatMsg extends ClientMessage {
 
 	@override
 	R visitClientMessage<R, A>(ClientMessageVisitor<R, A> v, A arg) => v.visitChatMsg(this, arg);
+
+}
+
+///  Sent by a player to confirm they have seen the hand result.
+class ConfirmResultMsg extends ClientMessage {
+	/// Creates a ConfirmResultMsg.
+	ConfirmResultMsg();
+
+	/// Parses a ConfirmResultMsg from a string source.
+	static ConfirmResultMsg? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a ConfirmResultMsg instance from the given reader.
+	static ConfirmResultMsg read(JsonReader json) {
+		ConfirmResultMsg result = ConfirmResultMsg();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "ConfirmResultMsg";
+
+	@override
+	R visitClientMessage<R, A>(ClientMessageVisitor<R, A> v, A arg) => v.visitConfirmResultMsg(this, arg);
 
 }
 

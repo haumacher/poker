@@ -14,6 +14,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import de.haumacher.games.poker.model.ChatMsg;
 import de.haumacher.games.poker.model.ClientMessage;
+import de.haumacher.games.poker.model.ConfirmResultMsg;
 import de.haumacher.games.poker.model.CreateTableMsg;
 import de.haumacher.games.poker.model.JoinTableMsg;
 import de.haumacher.games.poker.model.LeaveTableMsg;
@@ -89,6 +90,12 @@ public class PokerWebSocketHandler extends TextWebSocketHandler {
 			@Override
 			public Void visit(ChatMsg self, PlayerConnection c) {
 				// Chat not implemented yet
+				return null;
+			}
+
+			@Override
+			public Void visit(ConfirmResultMsg self, PlayerConnection c) {
+				tableManager.handleConfirmResult(c);
 				return null;
 			}
 

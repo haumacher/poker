@@ -328,6 +328,10 @@ message ChatMsg extends ClientMessage {
 	string text;
 }
 
+/** Sent by a player to confirm they have seen the hand result. */
+message ConfirmResultMsg extends ClientMessage {
+}
+
 /** Request to create a new table with configurable blinds. */
 message CreateTableMsg extends ClientMessage {
 	/** Small blind amount. Must be positive. */

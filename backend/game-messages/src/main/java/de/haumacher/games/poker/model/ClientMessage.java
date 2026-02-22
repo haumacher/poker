@@ -20,6 +20,9 @@ public interface ClientMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 		/** Type literal for {@link de.haumacher.games.poker.model.ChatMsg}. */
 		CHAT_MSG,
 
+		/** Type literal for {@link de.haumacher.games.poker.model.ConfirmResultMsg}. */
+		CONFIRM_RESULT_MSG,
+
 		/** Type literal for {@link de.haumacher.games.poker.model.CreateTableMsg}. */
 		CREATE_TABLE_MSG,
 		;
@@ -40,6 +43,9 @@ public interface ClientMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 
 		/** Visit case for {@link de.haumacher.games.poker.model.ChatMsg}.*/
 		R visit(de.haumacher.games.poker.model.ChatMsg self, A arg) throws E;
+
+		/** Visit case for {@link de.haumacher.games.poker.model.ConfirmResultMsg}.*/
+		R visit(de.haumacher.games.poker.model.ConfirmResultMsg self, A arg) throws E;
 
 		/** Visit case for {@link de.haumacher.games.poker.model.CreateTableMsg}.*/
 		R visit(de.haumacher.games.poker.model.CreateTableMsg self, A arg) throws E;
@@ -65,6 +71,7 @@ public interface ClientMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 			case JoinTableMsg.JOIN_TABLE_MSG__TYPE: result = de.haumacher.games.poker.model.JoinTableMsg.readJoinTableMsg(in); break;
 			case LeaveTableMsg.LEAVE_TABLE_MSG__TYPE: result = de.haumacher.games.poker.model.LeaveTableMsg.readLeaveTableMsg(in); break;
 			case ChatMsg.CHAT_MSG__TYPE: result = de.haumacher.games.poker.model.ChatMsg.readChatMsg(in); break;
+			case ConfirmResultMsg.CONFIRM_RESULT_MSG__TYPE: result = de.haumacher.games.poker.model.ConfirmResultMsg.readConfirmResultMsg(in); break;
 			case CreateTableMsg.CREATE_TABLE_MSG__TYPE: result = de.haumacher.games.poker.model.CreateTableMsg.readCreateTableMsg(in); break;
 			default: in.skipValue(); result = null; break;
 		}
@@ -87,6 +94,7 @@ public interface ClientMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 			case de.haumacher.games.poker.model.JoinTableMsg.JOIN_TABLE_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.JoinTableMsg_Impl.readJoinTableMsg_Content(in); break;
 			case de.haumacher.games.poker.model.LeaveTableMsg.LEAVE_TABLE_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.LeaveTableMsg_Impl.readLeaveTableMsg_Content(in); break;
 			case de.haumacher.games.poker.model.ChatMsg.CHAT_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.ChatMsg_Impl.readChatMsg_Content(in); break;
+			case de.haumacher.games.poker.model.ConfirmResultMsg.CONFIRM_RESULT_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.ConfirmResultMsg_Impl.readConfirmResultMsg_Content(in); break;
 			case de.haumacher.games.poker.model.CreateTableMsg.CREATE_TABLE_MSG__TYPE_ID: result = de.haumacher.games.poker.model.impl.CreateTableMsg_Impl.readCreateTableMsg_Content(in); break;
 			default: result = null; while (in.hasNext()) {in.skipValue(); }
 		}

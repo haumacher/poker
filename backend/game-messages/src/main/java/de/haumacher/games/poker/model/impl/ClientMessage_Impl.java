@@ -114,6 +114,10 @@ public abstract class ClientMessage_Impl extends de.haumacher.msgbuf.data.Abstra
 				return de.haumacher.games.poker.model.impl.ChatMsg_Impl.readChatMsg_XmlContent(in);
 			}
 
+			case ConfirmResultMsg_Impl.CONFIRM_RESULT_MSG__XML_ELEMENT: {
+				return de.haumacher.games.poker.model.impl.ConfirmResultMsg_Impl.readConfirmResultMsg_XmlContent(in);
+			}
+
 			case CreateTableMsg_Impl.CREATE_TABLE_MSG__XML_ELEMENT: {
 				return de.haumacher.games.poker.model.impl.CreateTableMsg_Impl.readCreateTableMsg_XmlContent(in);
 			}

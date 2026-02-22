@@ -6,12 +6,16 @@ class ActionBar extends StatefulWidget {
   final GameStateMsg? gameState;
   final int mySeat;
   final void Function(ActionType action, int amount) onAction;
+  final bool showContinue;
+  final VoidCallback? onContinue;
 
   const ActionBar({
     super.key,
     required this.gameState,
     required this.mySeat,
     required this.onAction,
+    this.showContinue = false,
+    this.onContinue,
   });
 
   @override
@@ -60,6 +64,28 @@ class _ActionBarState extends State<ActionBar> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.showContinue) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A1A),
+          border: Border(top: BorderSide(color: Colors.white12)),
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          height: 44,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade700,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: widget.onContinue,
+            child: const Text('Continue'),
+          ),
+        ),
+      );
+    }
+
     if (!_isMyTurn) {
       return const SizedBox(height: 60);
     }

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +23,7 @@ class TableScreen extends ConsumerStatefulWidget {
 }
 
 class _TableScreenState extends ConsumerState<TableScreen> {
-  Timer? _handResultTimer;
+  bool _confirmed = false;
 
   @override
   void initState() {
@@ -40,23 +38,12 @@ class _TableScreenState extends ConsumerState<TableScreen> {
       }
     });
 
-    // Auto-dismiss hand results after 5 seconds
+    // Reset confirmed state when a new hand result arrives
     ref.listenManual(handResultProvider, (prev, next) {
-      _handResultTimer?.cancel();
-      if (next != null) {
-        _handResultTimer = Timer(const Duration(seconds: 5), () {
-          if (mounted) {
-            ref.read(handResultProvider.notifier).state = null;
-          }
-        });
+      if (next != null && prev == null) {
+        setState(() => _confirmed = false);
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _handResultTimer?.cancel();
-    super.dispose();
   }
 
   void _leaveTable() {
@@ -71,6 +58,11 @@ class _TableScreenState extends ConsumerState<TableScreen> {
     if (mounted) context.go('/');
   }
 
+  void _confirmResult() {
+    setState(() => _confirmed = true);
+    ref.read(websocketServiceProvider).send(ConfirmResultMsg());
+  }
+
   @override
   Widget build(BuildContext context) {
     final tableInfo = ref.watch(tableInfoProvider);
@@ -78,6 +70,8 @@ class _TableScreenState extends ConsumerState<TableScreen> {
     final mySeat = ref.watch(playerSeatProvider);
     final connectionStatus = ref.watch(connectionStatusProvider);
     final handResult = ref.watch(handResultProvider);
+
+    final showContinue = handResult != null && !_confirmed;
 
     return Scaffold(
       appBar: AppBar(
@@ -136,6 +130,8 @@ class _TableScreenState extends ConsumerState<TableScreen> {
                         PlayerActionMsg(actionType: action, amount: amount),
                       );
                 },
+                showContinue: showContinue,
+                onContinue: _confirmResult,
               ),
             ],
           ),

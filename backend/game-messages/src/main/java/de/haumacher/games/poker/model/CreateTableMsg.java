@@ -25,7 +25,7 @@ public interface CreateTableMsg extends ClientMessage {
 	String TURN_TIMEOUT_SECONDS__PROP = "turnTimeoutSeconds";
 
 	/** Identifier for the {@link de.haumacher.games.poker.model.CreateTableMsg} type in binary format. */
-	static final int CREATE_TABLE_MSG__TYPE_ID = 5;
+	static final int CREATE_TABLE_MSG__TYPE_ID = 6;
 
 	/** Identifier for the property {@link #getSmallBlind()} in binary format. */
 	static final int SMALL_BLIND__ID = 1;

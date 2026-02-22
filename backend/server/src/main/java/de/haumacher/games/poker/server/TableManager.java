@@ -2,8 +2,10 @@ package de.haumacher.games.poker.server;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -152,6 +154,7 @@ public class TableManager {
 			int seat = connection.getSeat();
 			ctx.gameSession.removePlayer(seat);
 			ctx.connections.remove(connection.getSession().getId());
+			ctx.pendingConfirmations.remove(connection.getSession().getId());
 
 			connection.setTableId(null);
 			connection.setSeat(-1);
@@ -163,6 +166,9 @@ public class TableManager {
 
 			if (ctx.connections.isEmpty()) {
 				destroyTable(ctx);
+			} else if (ctx.pendingConfirmations.isEmpty()
+					&& ctx.gameSession.getPhase() == Phase.WAITING_FOR_PLAYERS) {
+				tryStartHand(ctx);
 			}
 		}
 	}
@@ -233,7 +239,7 @@ public class TableManager {
 				}
 				broadcastToTable(ctx, resultMsg);
 				broadcastGameState(ctx);
-				scheduleNextHand(ctx);
+				awaitConfirmations(ctx);
 			}
 
 			@Override
@@ -246,7 +252,7 @@ public class TableManager {
 						.setHandDescription("Last player standing"));
 				broadcastToTable(ctx, resultMsg);
 				broadcastGameState(ctx);
-				scheduleNextHand(ctx);
+				awaitConfirmations(ctx);
 			}
 
 			@Override
@@ -276,12 +282,26 @@ public class TableManager {
 		}
 	}
 
-	private void scheduleNextHand(TableContext ctx) {
-		scheduler.schedule(() -> {
-			synchronized (ctx) {
+	public void handleConfirmResult(PlayerConnection connection) {
+		String tableId = connection.getTableId();
+		if (tableId == null) return;
+
+		TableContext ctx = tables.get(tableId);
+		if (ctx == null) return;
+
+		synchronized (ctx) {
+			ctx.pendingConfirmations.remove(connection.getSession().getId());
+			if (ctx.pendingConfirmations.isEmpty()) {
 				tryStartHand(ctx);
 			}
-		}, 3, TimeUnit.SECONDS);
+		}
+	}
+
+	private void awaitConfirmations(TableContext ctx) {
+		ctx.pendingConfirmations.clear();
+		for (PlayerConnection conn : ctx.connections.values()) {
+			ctx.pendingConfirmations.add(conn.getSession().getId());
+		}
 	}
 
 	private void tryStartHand(TableContext ctx) {
@@ -410,6 +430,7 @@ public class TableManager {
 		volatile ScheduledFuture<?> turnTimerFuture;
 		volatile long turnStartedAtMillis;
 		boolean listenerSet;
+		final Set<String> pendingConfirmations = new HashSet<>();
 
 		TableContext(String tableId, String roomCode, GameSession gameSession, int turnTimeoutSeconds) {
 			this.tableId = tableId;
