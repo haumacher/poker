@@ -8,6 +8,7 @@ import 'package:poker_app/models/poker_messages.dart';
 import 'package:poker_app/providers/connection_status_provider.dart';
 import 'package:poker_app/providers/message_dispatcher_provider.dart';
 import 'package:poker_app/providers/table_info_provider.dart';
+import 'package:poker_app/providers/user_preferences_provider.dart';
 import 'package:poker_app/providers/websocket_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -18,14 +19,14 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _displayNameController = TextEditingController(text: '');
+  late final TextEditingController _displayNameController;
+  late final TextEditingController _serverHostController;
   final _roomCodeController = TextEditingController();
-  int _selectedBlindIndex = 0;
-  int _selectedTimeoutIndex = 1;
+  late int _selectedBlindIndex;
+  late int _selectedTimeoutIndex;
   bool _loading = false;
   bool _displayNameValid = false;
   bool _displayNameTouched = false;
-  String _serverHost = 'localhost:8080';
 
   static const _blindPresets = [
     (small: 5, big: 10),
@@ -42,6 +43,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    final prefs = ref.read(userPreferencesProvider);
+    _displayNameController = TextEditingController(text: prefs.displayName);
+    _serverHostController = TextEditingController(text: prefs.serverHost);
+    _selectedBlindIndex = prefs.blindIndex;
+    _selectedTimeoutIndex = prefs.timeoutIndex;
+    _displayNameValid = prefs.displayName.trim().isNotEmpty;
     _displayNameController.addListener(_onDisplayNameChanged);
   }
 
@@ -50,12 +57,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (valid != _displayNameValid) {
       setState(() => _displayNameValid = valid);
     }
+    ref.read(userPreferencesProvider.notifier).update(
+      (state) => state.copyWith(displayName: _displayNameController.text),
+    );
   }
 
   @override
   void dispose() {
     _displayNameController.removeListener(_onDisplayNameChanged);
     _displayNameController.dispose();
+    _serverHostController.dispose();
     _roomCodeController.dispose();
     super.dispose();
   }
@@ -63,8 +74,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _createTable() async {
     setState(() => _loading = true);
     try {
+      final serverHost = _serverHostController.text;
       final ws = ref.read(websocketServiceProvider);
-      await ws.connect('ws://$_serverHost/ws');
+      await ws.connect('ws://$serverHost/ws');
       ref.read(messageDispatcherProvider).start();
 
       final blind = _blindPresets[_selectedBlindIndex];
@@ -115,9 +127,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     setState(() => _loading = true);
     try {
+      final serverHost = _serverHostController.text;
       final ws = ref.read(websocketServiceProvider);
       if (!ws.isConnected) {
-        await ws.connect('ws://$_serverHost/ws');
+        await ws.connect('ws://$serverHost/ws');
         ref.read(messageDispatcherProvider).start();
       }
 
@@ -187,8 +200,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Server host
               TextField(
                 decoration: const InputDecoration(labelText: 'Server'),
-                onChanged: (v) => _serverHost = v,
-                controller: TextEditingController(text: _serverHost),
+                controller: _serverHostController,
+                onChanged: (v) {
+                  ref.read(userPreferencesProvider.notifier).update(
+                    (state) => state.copyWith(serverHost: v),
+                  );
+                },
               ),
               const SizedBox(height: 16),
 
@@ -222,7 +239,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                 ],
                 selected: {_selectedBlindIndex},
-                onSelectionChanged: (s) => setState(() => _selectedBlindIndex = s.first),
+                onSelectionChanged: (s) {
+                  setState(() => _selectedBlindIndex = s.first);
+                  ref.read(userPreferencesProvider.notifier).update(
+                    (state) => state.copyWith(blindIndex: s.first),
+                  );
+                },
               ),
               const SizedBox(height: 12),
               Text('Turn Timer', style: Theme.of(context).textTheme.bodySmall),
@@ -236,7 +258,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                 ],
                 selected: {_selectedTimeoutIndex},
-                onSelectionChanged: (s) => setState(() => _selectedTimeoutIndex = s.first),
+                onSelectionChanged: (s) {
+                  setState(() => _selectedTimeoutIndex = s.first);
+                  ref.read(userPreferencesProvider.notifier).update(
+                    (state) => state.copyWith(timeoutIndex: s.first),
+                  );
+                },
               ),
               const SizedBox(height: 12),
               ElevatedButton(
