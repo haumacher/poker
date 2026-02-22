@@ -1,15 +1,18 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:poker_app/models/poker_messages.dart' hide Card;
 import 'package:poker_app/models/poker_messages.dart' as msg;
+import 'package:poker_app/providers/hole_cards_provider.dart';
 import 'package:poker_app/theme/app_theme.dart';
+import 'package:poker_app/utils/hand_evaluator.dart';
 import 'package:poker_app/widgets/poker_table/community_cards.dart';
 import 'package:poker_app/widgets/poker_table/pot_display.dart';
 import 'package:poker_app/widgets/poker_table/seat_widget.dart';
 
-class PokerTable extends StatelessWidget {
+class PokerTable extends ConsumerWidget {
   final GameStateMsg? gameState;
   final int mySeat;
   final HandResultMsg? handResult;
@@ -17,7 +20,24 @@ class PokerTable extends StatelessWidget {
   const PokerTable({super.key, required this.gameState, required this.mySeat, this.handResult});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final holeCards = ref.watch(holeCardsProvider);
+
+    // Live hand evaluation for the local player (during play, not showdown)
+    HandResult? liveHand;
+    if (handResult == null && mySeat >= 0 && holeCards != null && holeCards.cards.isNotEmpty) {
+      final allCards = <msg.Card>[
+        ...holeCards.cards,
+        ...(gameState?.communityCards ?? []),
+      ];
+      liveHand = evaluateHand(allCards);
+    }
+
+    // Winner seats at showdown
+    final winnerSeats = handResult != null
+        ? handResult!.winners.map((w) => w.seat).toSet()
+        : <int>{};
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
@@ -51,21 +71,21 @@ class PokerTable extends StatelessWidget {
                   const SizedBox(height: 8),
                   CommunityCards(
                     cards: gameState?.communityCards ?? [],
-                    highlightedIndices: _highlightedCommunityIndices(),
+                    highlightedIndices: _highlightedCommunityIndices(liveHand, winnerSeats),
                   ),
                 ],
               ),
             ),
 
             // 9 seats positioned around the oval
-            ..._buildSeats(w, h),
+            ..._buildSeats(w, h, liveHand, winnerSeats),
           ],
         );
       },
     );
   }
 
-  List<Widget> _buildSeats(double w, double h) {
+  List<Widget> _buildSeats(double w, double h, HandResult? liveHand, Set<int> winnerSeats) {
     // 9 seats around an oval. Seat positions as angles (in radians).
     // Local player is at bottom center. We rotate the layout so mySeat
     // appears at the bottom.
@@ -129,6 +149,8 @@ class PokerTable extends StatelessWidget {
             isLocalPlayer: seatIndex == mySeat,
             turnTimeRemaining: isCurrentTurn ? (gameState?.turnTimeRemaining ?? 0) : 0,
             showdownHand: _showdownHandForSeat(seatIndex),
+            liveHand: seatIndex == mySeat ? liveHand : null,
+            isWinner: winnerSeats.contains(seatIndex),
           ),
         ),
       );
@@ -137,14 +159,25 @@ class PokerTable extends StatelessWidget {
     return widgets;
   }
 
-  Set<int> _highlightedCommunityIndices() {
-    if (handResult == null || mySeat < 0) return const {};
+  Set<int> _highlightedCommunityIndices(HandResult? liveHand, Set<int> winnerSeats) {
     final community = gameState?.communityCards ?? [];
-    for (final sh in handResult!.showdownHands) {
-      if (sh.seat == mySeat) {
-        return _matchCardIndices(community, sh.bestCards);
+    if (community.isEmpty) return const {};
+
+    // At showdown: highlight based on first winner's best cards
+    if (handResult != null) {
+      for (final sh in handResult!.showdownHands) {
+        if (winnerSeats.contains(sh.seat)) {
+          return _matchCardIndices(community, sh.bestCards);
+        }
       }
+      return const {};
     }
+
+    // During play: highlight based on live hand evaluation
+    if (liveHand != null && mySeat >= 0) {
+      return _matchCardIndices(community, liveHand.relevantCards);
+    }
+
     return const {};
   }
 

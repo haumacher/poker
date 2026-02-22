@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poker_app/models/poker_messages.dart' hide Card;
 import 'package:poker_app/models/poker_messages.dart' as msg;
 import 'package:poker_app/providers/hole_cards_provider.dart';
+import 'package:poker_app/utils/hand_evaluator.dart';
 import 'package:poker_app/widgets/cards/card_back.dart';
 import 'package:poker_app/widgets/cards/playing_card.dart';
 
@@ -15,6 +16,8 @@ class SeatWidget extends ConsumerWidget {
   final bool isLocalPlayer;
   final int turnTimeRemaining;
   final ShowdownHand? showdownHand;
+  final HandResult? liveHand;
+  final bool isWinner;
 
   const SeatWidget({
     super.key,
@@ -25,6 +28,8 @@ class SeatWidget extends ConsumerWidget {
     this.isLocalPlayer = false,
     this.turnTimeRemaining = 0,
     this.showdownHand,
+    this.liveHand,
+    this.isWinner = false,
   });
 
   @override
@@ -130,9 +135,19 @@ class SeatWidget extends ConsumerWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                PlayingCard(card: holeCards.cards[0], width: 32, height: 45),
+                PlayingCard(
+                  card: holeCards.cards[0],
+                  width: 32,
+                  height: 45,
+                  highlighted: liveHand != null && _isInRelevant(holeCards.cards[0], liveHand!.relevantCards),
+                ),
                 const SizedBox(width: 2),
-                PlayingCard(card: holeCards.cards[1], width: 32, height: 45),
+                PlayingCard(
+                  card: holeCards.cards[1],
+                  width: 32,
+                  height: 45,
+                  highlighted: liveHand != null && _isInRelevant(holeCards.cards[1], liveHand!.relevantCards),
+                ),
               ],
             )
           else if (p.status == PlayerStatus.active || p.status == PlayerStatus.allIn)
@@ -145,12 +160,21 @@ class SeatWidget extends ConsumerWidget {
               ],
             ),
 
-          // Hand description at showdown
+          // Hand description (live during play, or at showdown)
           if (hasShowdown)
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                 showdownHand!.handDescription,
+                style: const TextStyle(fontSize: 9, color: Colors.amber, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            )
+          else if (isLocalPlayer && liveHand != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                liveHand!.description,
                 style: const TextStyle(fontSize: 9, color: Colors.amber, fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -169,22 +193,22 @@ class SeatWidget extends ConsumerWidget {
           card: sh.holeCards[0],
           width: 32,
           height: 45,
-          highlighted: _isInBestCards(sh.holeCards[0], bestCards),
+          highlighted: isWinner && _isInRelevant(sh.holeCards[0], bestCards),
         ),
         const SizedBox(width: 2),
         PlayingCard(
           card: sh.holeCards[1],
           width: 32,
           height: 45,
-          highlighted: _isInBestCards(sh.holeCards[1], bestCards),
+          highlighted: isWinner && _isInRelevant(sh.holeCards[1], bestCards),
         ),
       ],
     );
   }
 
-  bool _isInBestCards(msg.Card card, List<msg.Card> bestCards) {
-    for (final bc in bestCards) {
-      if (bc.rank == card.rank && bc.suit == card.suit) return true;
+  bool _isInRelevant(msg.Card card, List<msg.Card> relevantCards) {
+    for (final rc in relevantCards) {
+      if (rc.rank == card.rank && rc.suit == card.suit) return true;
     }
     return false;
   }
