@@ -118,9 +118,12 @@ class _TableScreenState extends ConsumerState<TableScreen> {
 
               // Poker table
               Expanded(
-                child: PokerTable(
-                  gameState: gameState,
-                  mySeat: mySeat,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: PokerTable(
+                    gameState: gameState,
+                    mySeat: mySeat,
+                  ),
                 ),
               ),
 

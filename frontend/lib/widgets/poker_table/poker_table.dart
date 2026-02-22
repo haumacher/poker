@@ -94,8 +94,9 @@ class PokerTable extends StatelessWidget {
 
     final cx = w / 2;
     final cy = h / 2;
-    final rx = w * 0.45; // horizontal radius
-    final ry = h * 0.45; // vertical radius
+    // Cap radii so seat widgets (120×~80) stay within bounds
+    final rx = math.min(w * 0.45, cx - 68);  // 60 half-width + 8 margin
+    final ry = math.min(h * 0.45, cy - 48);  // 40 half-height + 8 margin
 
     final widgets = <Widget>[];
 
