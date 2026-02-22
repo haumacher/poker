@@ -246,22 +246,35 @@ class _ActionBarState extends State<ActionBar> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _actionButton(
-                    label: 'Confirm ${_raiseSliderValue.toInt()}',
-                    color: Colors.green.shade700,
-                    onPressed: isPreSelecting
-                        ? () {
-                            setState(() {
-                              _preSelectedAction = ActionType.raise;
-                              _preSelectedRaiseAmount = _raiseSliderValue.toInt();
-                              _showRaiseSlider = false;
-                            });
-                          }
-                        : () {
-                            widget.onAction(ActionType.raise, _raiseSliderValue.toInt());
-                            setState(() => _showRaiseSlider = false);
-                          },
-                  ),
+                  child: Builder(builder: (_) {
+                    final amount = _raiseSliderValue.toInt();
+                    final isCall = amount <= _maxBet;
+                    return _actionButton(
+                      label: isCall ? 'Call $_callAmount' : 'Confirm $amount',
+                      color: isCall ? Colors.blue.shade700 : Colors.green.shade700,
+                      onPressed: isPreSelecting
+                          ? () {
+                              setState(() {
+                                if (isCall) {
+                                  _preSelectedAction = ActionType.call;
+                                  _preSelectedRaiseAmount = 0;
+                                } else {
+                                  _preSelectedAction = ActionType.raise;
+                                  _preSelectedRaiseAmount = amount;
+                                }
+                                _showRaiseSlider = false;
+                              });
+                            }
+                          : () {
+                              if (isCall) {
+                                widget.onAction(ActionType.call, 0);
+                              } else {
+                                widget.onAction(ActionType.raise, amount);
+                              }
+                              setState(() => _showRaiseSlider = false);
+                            },
+                    );
+                  }),
                 ),
               ],
             )
@@ -355,13 +368,57 @@ class _ActionBarState extends State<ActionBar> {
     );
   }
 
-  Widget _buildRaiseSlider([bool isPreSelecting = false]) {
+  /// Build the discrete raise steps: min, min+step, min+2*step, ..., then all-in.
+  List<int> _buildRaiseSteps() {
     final me = _myPlayerState;
-    if (me == null) return const SizedBox.shrink();
+    if (me == null) return [];
 
-    final maxRaise = (me.chips + me.currentBet).toDouble();
-    final min = _minRaiseTotal.toDouble();
-    if (min >= maxRaise) return const SizedBox.shrink();
+    final allIn = me.chips + me.currentBet;
+    final min = _minRaiseTotal;
+    if (min >= allIn) return [allIn];
+
+    // minRaise is the big blind amount; half-blind = minRaise / 2
+    final halfBlind = (_minRaiseIncrement / 2).ceil().clamp(1, allIn);
+    final steps = <int>[];
+    for (var v = min; v < allIn; v += halfBlind) {
+      steps.add(v);
+    }
+    // Always include all-in as last step
+    if (steps.isEmpty || steps.last != allIn) {
+      steps.add(allIn);
+    }
+    return steps;
+  }
+
+  Widget _buildRaiseSlider([bool isPreSelecting = false]) {
+    final steps = _buildRaiseSteps();
+    if (steps.length < 2) return const SizedBox.shrink();
+
+    final min = steps.first.toDouble();
+    final max = steps.last.toDouble();
+
+    // Snap slider value to nearest step
+    int snap(double v) {
+      var best = steps.first;
+      var bestDist = (v - best).abs();
+      for (final s in steps) {
+        final d = (v - s).abs();
+        if (d < bestDist) {
+          bestDist = d;
+          best = s;
+        }
+      }
+      return best;
+    }
+
+    final sliderAmount = _raiseSliderValue.toInt();
+    final isAllIn = sliderAmount == steps.last;
+    final isCall = sliderAmount <= _maxBet;
+    final label = isCall
+        ? 'Call: $_callAmount'
+        : isAllIn
+            ? 'All In: ${steps.last}'
+            : 'Raise: $sliderAmount';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -370,23 +427,22 @@ class _ActionBarState extends State<ActionBar> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Raise: ${_raiseSliderValue.toInt()}',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
               Row(
                 children: [
                   _presetButton('Min', min),
-                  _presetButton('1/2 Pot', _halfPot(min, maxRaise)),
-                  _presetButton('Pot', _potRaise(min, maxRaise)),
+                  _presetButton('1/2 Pot', _halfPot(min, max)),
+                  _presetButton('Pot', _potRaise(min, max)),
                 ],
               ),
             ],
           ),
           Slider(
-            value: _raiseSliderValue.clamp(min, maxRaise),
+            value: _raiseSliderValue.clamp(min, max),
             min: min,
-            max: maxRaise,
-            divisions: (maxRaise - min).toInt().clamp(1, 100),
-            onChanged: (v) => setState(() => _raiseSliderValue = v),
+            max: max,
+            divisions: steps.length - 1,
+            onChanged: (v) => setState(() => _raiseSliderValue = snap(v).toDouble()),
           ),
         ],
       ),
