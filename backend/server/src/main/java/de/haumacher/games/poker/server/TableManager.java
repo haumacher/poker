@@ -27,6 +27,7 @@ import de.haumacher.games.poker.model.Card;
 import de.haumacher.games.poker.model.ErrorMsg;
 import de.haumacher.games.poker.model.GameStateMsg;
 import de.haumacher.games.poker.model.HandResultMsg;
+import de.haumacher.games.poker.model.ShowdownHand;
 import de.haumacher.games.poker.model.HoleCardsMsg;
 import de.haumacher.games.poker.model.Phase;
 import de.haumacher.games.poker.model.PlayerJoinedMsg;
@@ -228,7 +229,7 @@ public class TableManager {
 			}
 
 			@Override
-			public void onShowdown(List<GameSession.WinResult> winners) {
+			public void onShowdown(List<GameSession.WinResult> winners, List<GameSession.ShowdownInfo> hands) {
 				cancelTurnTimer(ctx);
 				HandResultMsg resultMsg = HandResultMsg.create();
 				for (GameSession.WinResult wr : winners) {
@@ -236,6 +237,13 @@ public class TableManager {
 							.setSeat(wr.seat())
 							.setAmount(wr.amount())
 							.setHandDescription(wr.handDescription()));
+				}
+				for (GameSession.ShowdownInfo si : hands) {
+					resultMsg.addShowdownHand(ShowdownHand.create()
+							.setSeat(si.seat())
+							.setHoleCards(si.holeCards())
+							.setHandDescription(si.hand().describe())
+							.setBestCards(si.hand().getCards()));
 				}
 				broadcastToTable(ctx, resultMsg);
 				broadcastGameState(ctx);

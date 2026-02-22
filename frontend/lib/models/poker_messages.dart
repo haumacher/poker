@@ -553,6 +553,111 @@ class WinnerInfo extends _JsonObject {
 
 }
 
+///  A contender's evaluated hand at showdown (for revealing hole cards and best hand).
+class ShowdownHand extends _JsonObject {
+	///  Seat index of the contender.
+	int seat;
+
+	///  The player's two hole cards.
+	List<Card> holeCards;
+
+	///  Human-readable hand description (e.g. "Three of a Kind").
+	String handDescription;
+
+	///  The 5 cards forming the best hand (for highlighting).
+	List<Card> bestCards;
+
+	/// Creates a ShowdownHand.
+	ShowdownHand({
+			this.seat = 0,
+			this.holeCards = const [],
+			this.handDescription = "",
+			this.bestCards = const [],
+	});
+
+	/// Parses a ShowdownHand from a string source.
+	static ShowdownHand? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a ShowdownHand instance from the given reader.
+	static ShowdownHand read(JsonReader json) {
+		ShowdownHand result = ShowdownHand();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "ShowdownHand";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "seat": {
+				seat = json.expectInt();
+				break;
+			}
+			case "holeCards": {
+				json.expectArray();
+				holeCards = [];
+				while (json.hasNext()) {
+					if (!json.tryNull()) {
+						var value = Card.read(json);
+						if (value != null) {
+							holeCards.add(value);
+						}
+					}
+				}
+				break;
+			}
+			case "handDescription": {
+				handDescription = json.expectString();
+				break;
+			}
+			case "bestCards": {
+				json.expectArray();
+				bestCards = [];
+				while (json.hasNext()) {
+					if (!json.tryNull()) {
+						var value = Card.read(json);
+						if (value != null) {
+							bestCards.add(value);
+						}
+					}
+				}
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("seat");
+		json.addNumber(seat);
+
+		json.addKey("holeCards");
+		json.startArray();
+		for (var _element in holeCards) {
+			_element.writeContent(json);
+		}
+		json.endArray();
+
+		json.addKey("handDescription");
+		json.addString(handDescription);
+
+		json.addKey("bestCards");
+		json.startArray();
+		for (var _element in bestCards) {
+			_element.writeContent(json);
+		}
+		json.endArray();
+	}
+
+}
+
 /// Visitor interface for ServerMessage.
 abstract class ServerMessageVisitor<R, A> {
 	R visitGameStateMsg(GameStateMsg self, A arg);
@@ -897,9 +1002,13 @@ class HandResultMsg extends ServerMessage {
 	///  All winners across main pot and side pots.
 	List<WinnerInfo> winners;
 
+	///  All contenders' evaluated hands at showdown (empty for win-without-showdown).
+	List<ShowdownHand> showdownHands;
+
 	/// Creates a HandResultMsg.
 	HandResultMsg({
 			this.winners = const [],
+			this.showdownHands = const [],
 	});
 
 	/// Parses a HandResultMsg from a string source.
@@ -933,6 +1042,19 @@ class HandResultMsg extends ServerMessage {
 				}
 				break;
 			}
+			case "showdownHands": {
+				json.expectArray();
+				showdownHands = [];
+				while (json.hasNext()) {
+					if (!json.tryNull()) {
+						var value = ShowdownHand.read(json);
+						if (value != null) {
+							showdownHands.add(value);
+						}
+					}
+				}
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -944,6 +1066,13 @@ class HandResultMsg extends ServerMessage {
 		json.addKey("winners");
 		json.startArray();
 		for (var _element in winners) {
+			_element.writeContent(json);
+		}
+		json.endArray();
+
+		json.addKey("showdownHands");
+		json.startArray();
+		for (var _element in showdownHands) {
 			_element.writeContent(json);
 		}
 		json.endArray();

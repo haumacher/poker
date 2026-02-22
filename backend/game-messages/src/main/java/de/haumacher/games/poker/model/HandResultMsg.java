@@ -21,11 +21,17 @@ public interface HandResultMsg extends ServerMessage {
 	/** @see #getWinners() */
 	String WINNERS__PROP = "winners";
 
+	/** @see #getShowdownHands() */
+	String SHOWDOWN_HANDS__PROP = "showdownHands";
+
 	/** Identifier for the {@link de.haumacher.games.poker.model.HandResultMsg} type in binary format. */
 	static final int HAND_RESULT_MSG__TYPE_ID = 3;
 
 	/** Identifier for the property {@link #getWinners()} in binary format. */
 	static final int WINNERS__ID = 1;
+
+	/** Identifier for the property {@link #getShowdownHands()} in binary format. */
+	static final int SHOWDOWN_HANDS__ID = 2;
 
 	/**
 	 * All winners across main pot and side pots.
@@ -46,6 +52,26 @@ public interface HandResultMsg extends ServerMessage {
 	 * Removes a value from the {@link #getWinners()} list.
 	 */
 	void removeWinner(de.haumacher.games.poker.model.WinnerInfo value);
+
+	/**
+	 * All contenders' evaluated hands at showdown (empty for win-without-showdown).
+	 */
+	java.util.List<de.haumacher.games.poker.model.ShowdownHand> getShowdownHands();
+
+	/**
+	 * @see #getShowdownHands()
+	 */
+	de.haumacher.games.poker.model.HandResultMsg setShowdownHands(java.util.List<? extends de.haumacher.games.poker.model.ShowdownHand> value);
+
+	/**
+	 * Adds a value to the {@link #getShowdownHands()} list.
+	 */
+	de.haumacher.games.poker.model.HandResultMsg addShowdownHand(de.haumacher.games.poker.model.ShowdownHand value);
+
+	/**
+	 * Removes a value from the {@link #getShowdownHands()} list.
+	 */
+	void removeShowdownHand(de.haumacher.games.poker.model.ShowdownHand value);
 
 	/** Reads a new instance from the given reader. */
 	static de.haumacher.games.poker.model.HandResultMsg readHandResultMsg(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {

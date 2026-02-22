@@ -151,6 +151,21 @@ message WinnerInfo {
 	string handDescription;
 }
 
+/** A contender's evaluated hand at showdown (for revealing hole cards and best hand). */
+message ShowdownHand {
+	/** Seat index of the contender. */
+	int seat;
+
+	/** The player's two hole cards. */
+	repeated Card holeCards;
+
+	/** Human-readable hand description (e.g. "Three of a Kind"). */
+	string handDescription;
+
+	/** The 5 cards forming the best hand (for highlighting). */
+	repeated Card bestCards;
+}
+
 /* ============================================================================
  * Server → Client messages
  *
@@ -227,6 +242,9 @@ message HoleCardsMsg extends ServerMessage {
 message HandResultMsg extends ServerMessage {
 	/** All winners across main pot and side pots. */
 	repeated WinnerInfo winners;
+
+	/** All contenders' evaluated hands at showdown (empty for win-without-showdown). */
+	repeated ShowdownHand showdownHands;
 }
 
 /**

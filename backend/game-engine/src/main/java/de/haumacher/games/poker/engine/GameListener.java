@@ -19,8 +19,8 @@ public interface GameListener {
 	/** Called when a player acts. */
 	default void onPlayerAction(int seat, de.haumacher.games.poker.model.ActionType action, long amount) {}
 
-	/** Called at showdown with results. */
-	default void onShowdown(List<GameSession.WinResult> winners) {}
+	/** Called at showdown with results and all contenders' evaluated hands. */
+	default void onShowdown(List<GameSession.WinResult> winners, List<GameSession.ShowdownInfo> hands) {}
 
 	/** Called when a player wins without showdown (all others folded). */
 	default void onWinWithoutShowdown(int seat, long amount) {}

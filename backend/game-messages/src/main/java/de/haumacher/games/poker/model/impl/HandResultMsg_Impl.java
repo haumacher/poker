@@ -22,6 +22,23 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 		}
 	};
 
+	private final java.util.List<de.haumacher.games.poker.model.ShowdownHand> _showdownHands = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.games.poker.model.ShowdownHand>() {
+		@Override
+		protected void beforeAdd(int index, de.haumacher.games.poker.model.ShowdownHand element) {
+			_listener.beforeAdd(HandResultMsg_Impl.this, SHOWDOWN_HANDS__PROP, index, element);
+		}
+
+		@Override
+		protected void afterRemove(int index, de.haumacher.games.poker.model.ShowdownHand element) {
+			_listener.afterRemove(HandResultMsg_Impl.this, SHOWDOWN_HANDS__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(HandResultMsg_Impl.this, SHOWDOWN_HANDS__PROP);
+		}
+	};
+
 	/**
 	 * Creates a {@link HandResultMsg_Impl} instance.
 	 *
@@ -71,6 +88,40 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 	}
 
 	@Override
+	public final java.util.List<de.haumacher.games.poker.model.ShowdownHand> getShowdownHands() {
+		return _showdownHands;
+	}
+
+	@Override
+	public de.haumacher.games.poker.model.HandResultMsg setShowdownHands(java.util.List<? extends de.haumacher.games.poker.model.ShowdownHand> value) {
+		internalSetShowdownHands(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getShowdownHands()} without chain call utility. */
+	protected final void internalSetShowdownHands(java.util.List<? extends de.haumacher.games.poker.model.ShowdownHand> value) {
+		if (value == null) throw new IllegalArgumentException("Property 'showdownHands' cannot be null.");
+		_showdownHands.clear();
+		_showdownHands.addAll(value);
+	}
+
+	@Override
+	public de.haumacher.games.poker.model.HandResultMsg addShowdownHand(de.haumacher.games.poker.model.ShowdownHand value) {
+		internalAddShowdownHand(value);
+		return this;
+	}
+
+	/** Implementation of {@link #addShowdownHand(de.haumacher.games.poker.model.ShowdownHand)} without chain call utility. */
+	protected final void internalAddShowdownHand(de.haumacher.games.poker.model.ShowdownHand value) {
+		_showdownHands.add(value);
+	}
+
+	@Override
+	public final void removeShowdownHand(de.haumacher.games.poker.model.ShowdownHand value) {
+		_showdownHands.remove(value);
+	}
+
+	@Override
 	public String jsonType() {
 		return HAND_RESULT_MSG__TYPE;
 	}
@@ -78,7 +129,8 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 	static final java.util.List<String> PROPERTIES;
 	static {
 		java.util.List<String> local = java.util.Arrays.asList(
-			WINNERS__PROP);
+			WINNERS__PROP, 
+			SHOWDOWN_HANDS__PROP);
 		PROPERTIES = java.util.Collections.unmodifiableList(local);
 	}
 
@@ -104,6 +156,7 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 	public Object get(String field) {
 		switch (field) {
 			case WINNERS__PROP: return getWinners();
+			case SHOWDOWN_HANDS__PROP: return getShowdownHands();
 			default: return super.get(field);
 		}
 	}
@@ -112,6 +165,7 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 	public void set(String field, Object value) {
 		switch (field) {
 			case WINNERS__PROP: internalSetWinners(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.games.poker.model.WinnerInfo.class, value)); break;
+			case SHOWDOWN_HANDS__PROP: internalSetShowdownHands(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.games.poker.model.ShowdownHand.class, value)); break;
 			default: super.set(field, value); break;
 		}
 	}
@@ -122,6 +176,12 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 		out.name(WINNERS__PROP);
 		out.beginArray();
 		for (de.haumacher.games.poker.model.WinnerInfo x : getWinners()) {
+			x.writeTo(out);
+		}
+		out.endArray();
+		out.name(SHOWDOWN_HANDS__PROP);
+		out.beginArray();
+		for (de.haumacher.games.poker.model.ShowdownHand x : getShowdownHands()) {
 			x.writeTo(out);
 		}
 		out.endArray();
@@ -138,6 +198,16 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 				}
 				in.endArray();
 				setWinners(newValue);
+			}
+			break;
+			case SHOWDOWN_HANDS__PROP: {
+				java.util.List<de.haumacher.games.poker.model.ShowdownHand> newValue = new java.util.ArrayList<>();
+				in.beginArray();
+				while (in.hasNext()) {
+					newValue.add(de.haumacher.games.poker.model.ShowdownHand.readShowdownHand(in));
+				}
+				in.endArray();
+				setShowdownHands(newValue);
 			}
 			break;
 			default: super.readField(in, field);
@@ -157,6 +227,15 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 			java.util.List<de.haumacher.games.poker.model.WinnerInfo> values = getWinners();
 			out.beginArray(de.haumacher.msgbuf.binary.DataType.OBJECT, values.size());
 			for (de.haumacher.games.poker.model.WinnerInfo x : values) {
+				x.writeTo(out);
+			}
+			out.endArray();
+		}
+		out.name(SHOWDOWN_HANDS__ID);
+		{
+			java.util.List<de.haumacher.games.poker.model.ShowdownHand> values = getShowdownHands();
+			out.beginArray(de.haumacher.msgbuf.binary.DataType.OBJECT, values.size());
+			for (de.haumacher.games.poker.model.ShowdownHand x : values) {
 				x.writeTo(out);
 			}
 			out.endArray();
@@ -181,6 +260,14 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 				in.endArray();
 			}
 			break;
+			case SHOWDOWN_HANDS__ID: {
+				in.beginArray();
+				while (in.hasNext()) {
+					addShowdownHand(de.haumacher.games.poker.model.ShowdownHand.readShowdownHand(in));
+				}
+				in.endArray();
+			}
+			break;
 			default: super.readField(in, field);
 		}
 	}
@@ -190,6 +277,9 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 
 	/** XML attribute or element name of a {@link #getWinners} property. */
 	private static final String WINNERS__XML_ATTR = "winners";
+
+	/** XML attribute or element name of a {@link #getShowdownHands} property. */
+	private static final String SHOWDOWN_HANDS__XML_ATTR = "showdown-hands";
 
 	@Override
 	public String getXmlTagName() {
@@ -208,6 +298,11 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 		super.writeElements(out);
 		out.writeStartElement(WINNERS__XML_ATTR);
 		for (de.haumacher.games.poker.model.WinnerInfo element : getWinners()) {
+			element.writeTo(out);
+		}
+		out.writeEndElement();
+		out.writeStartElement(SHOWDOWN_HANDS__XML_ATTR);
+		for (de.haumacher.games.poker.model.ShowdownHand element : getShowdownHands()) {
 			element.writeTo(out);
 		}
 		out.writeEndElement();
@@ -236,6 +331,10 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 				internalReadWinnersListXml(in);
 				break;
 			}
+			case SHOWDOWN_HANDS__XML_ATTR: {
+				internalReadShowdownHandsListXml(in);
+				break;
+			}
 			default: {
 				super.readFieldXmlElement(in, localName);
 			}
@@ -250,6 +349,17 @@ public class HandResultMsg_Impl extends de.haumacher.games.poker.model.impl.Serv
 			}
 
 			addWinner(de.haumacher.games.poker.model.impl.WinnerInfo_Impl.readWinnerInfo_XmlContent(in));
+		}
+	}
+
+	private void internalReadShowdownHandsListXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+
+			addShowdownHand(de.haumacher.games.poker.model.impl.ShowdownHand_Impl.readShowdownHand_XmlContent(in));
 		}
 	}
 

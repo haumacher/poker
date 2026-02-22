@@ -453,6 +453,16 @@ public class GameSession {
 		List<Pot.PotInfo> pots = pot.calculateSidePots();
 		List<WinResult> allWinners = new ArrayList<>();
 
+		// Evaluate all players still in the hand (for showdown display)
+		List<ShowdownInfo> showdownHands = new ArrayList<>();
+		List<Integer> allInHand = getPlayersInHand();
+		for (int s : allInHand) {
+			List<Card> allCards = new ArrayList<>(communityCards);
+			allCards.addAll(seats[s].getHoleCards());
+			EvaluatedHand eval = HandEvaluator.evaluate(allCards);
+			showdownHands.add(new ShowdownInfo(s, List.copyOf(seats[s].getHoleCards()), eval));
+		}
+
 		for (Pot.PotInfo potInfo : pots) {
 			// Find best hand among eligible players still in the hand
 			List<Integer> contenders = new ArrayList<>();
@@ -471,14 +481,21 @@ public class GameSession {
 				continue;
 			}
 
-			// Evaluate hands and find the best
+			// Find the best hand among contenders for this pot
 			EvaluatedHand bestHand = null;
 			List<Integer> winners = new ArrayList<>();
 
 			for (int s : contenders) {
-				List<Card> allCards = new ArrayList<>(communityCards);
-				allCards.addAll(seats[s].getHoleCards());
-				EvaluatedHand eval = HandEvaluator.evaluate(allCards);
+				// Look up the already-evaluated hand
+				EvaluatedHand eval = null;
+				for (ShowdownInfo info : showdownHands) {
+					if (info.seat() == s) {
+						eval = info.hand();
+						break;
+					}
+				}
+
+				if (eval == null) continue;
 
 				if (bestHand == null || eval.compareTo(bestHand) < 0) {
 					bestHand = eval;
@@ -490,7 +507,6 @@ public class GameSession {
 			}
 
 			if (bestHand == null) {
-				// Cannot happen — contenders has at least 2 entries here
 				continue;
 			}
 
@@ -504,7 +520,7 @@ public class GameSession {
 			}
 		}
 
-		listener.onShowdown(allWinners);
+		listener.onShowdown(allWinners, showdownHands);
 		endHand();
 	}
 
@@ -575,4 +591,6 @@ public class GameSession {
 	}
 
 	public record WinResult(int seat, long amount, String handDescription) {}
+
+	public record ShowdownInfo(int seat, List<Card> holeCards, EvaluatedHand hand) {}
 }

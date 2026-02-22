@@ -374,7 +374,7 @@ class GameSessionTest {
 		}
 
 		@Override
-		public void onShowdown(List<GameSession.WinResult> winners) {
+		public void onShowdown(List<GameSession.WinResult> winners, List<GameSession.ShowdownInfo> hands) {
 			showdownResults.add(new ArrayList<>(winners));
 		}
 

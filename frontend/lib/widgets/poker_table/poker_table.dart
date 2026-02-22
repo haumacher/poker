@@ -2,7 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'package:poker_app/models/poker_messages.dart';
+import 'package:poker_app/models/poker_messages.dart' hide Card;
+import 'package:poker_app/models/poker_messages.dart' as msg;
 import 'package:poker_app/theme/app_theme.dart';
 import 'package:poker_app/widgets/poker_table/community_cards.dart';
 import 'package:poker_app/widgets/poker_table/pot_display.dart';
@@ -11,8 +12,9 @@ import 'package:poker_app/widgets/poker_table/seat_widget.dart';
 class PokerTable extends StatelessWidget {
   final GameStateMsg? gameState;
   final int mySeat;
+  final HandResultMsg? handResult;
 
-  const PokerTable({super.key, required this.gameState, required this.mySeat});
+  const PokerTable({super.key, required this.gameState, required this.mySeat, this.handResult});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,10 @@ class PokerTable extends StatelessWidget {
                     sidePots: gameState?.sidePots ?? [],
                   ),
                   const SizedBox(height: 8),
-                  CommunityCards(cards: gameState?.communityCards ?? []),
+                  CommunityCards(
+                    cards: gameState?.communityCards ?? [],
+                    highlightedIndices: _highlightedCommunityIndices(),
+                  ),
                 ],
               ),
             ),
@@ -123,12 +128,45 @@ class PokerTable extends StatelessWidget {
             isCurrentTurn: isCurrentTurn,
             isLocalPlayer: seatIndex == mySeat,
             turnTimeRemaining: isCurrentTurn ? (gameState?.turnTimeRemaining ?? 0) : 0,
+            showdownHand: _showdownHandForSeat(seatIndex),
           ),
         ),
       );
     }
 
     return widgets;
+  }
+
+  Set<int> _highlightedCommunityIndices() {
+    if (handResult == null || mySeat < 0) return const {};
+    final community = gameState?.communityCards ?? [];
+    for (final sh in handResult!.showdownHands) {
+      if (sh.seat == mySeat) {
+        return _matchCardIndices(community, sh.bestCards);
+      }
+    }
+    return const {};
+  }
+
+  static Set<int> _matchCardIndices(List<msg.Card> community, List<msg.Card> bestCards) {
+    final indices = <int>{};
+    for (var i = 0; i < community.length; i++) {
+      for (final bc in bestCards) {
+        if (community[i].rank == bc.rank && community[i].suit == bc.suit) {
+          indices.add(i);
+          break;
+        }
+      }
+    }
+    return indices;
+  }
+
+  ShowdownHand? _showdownHandForSeat(int seat) {
+    if (handResult == null) return null;
+    for (final sh in handResult!.showdownHands) {
+      if (sh.seat == seat) return sh;
+    }
+    return null;
   }
 
   PlayerState? _playerAtSeat(int seat) {

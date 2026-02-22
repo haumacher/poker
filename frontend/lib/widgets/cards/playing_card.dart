@@ -7,12 +7,14 @@ class PlayingCard extends StatelessWidget {
   final msg.Card card;
   final double width;
   final double height;
+  final bool highlighted;
 
   const PlayingCard({
     super.key,
     required this.card,
     this.width = 44,
     this.height = 62,
+    this.highlighted = false,
   });
 
   @override
@@ -25,9 +27,9 @@ class PlayingCard extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: highlighted ? const Color(0xFFFFF9C4) : Colors.white,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey.shade400),
+        border: Border.all(color: highlighted ? Colors.amber : Colors.grey.shade400),
         boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 2, offset: Offset(1, 1))],
       ),
       child: Column(

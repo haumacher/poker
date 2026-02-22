@@ -117,6 +117,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
                   child: PokerTable(
                     gameState: gameState,
                     mySeat: mySeat,
+                    handResult: handResult,
                   ),
                 ),
               ),
