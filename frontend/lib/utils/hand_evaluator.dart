@@ -73,7 +73,7 @@ HandResult _evaluatePartial(List<msg.Card> cards) {
     final pairCards = pairs.first.value.sublist(0, 2);
     return HandResult(
       HandRank.onePair,
-      'Pair of ${_rankPluralName(pairs.first.key)}',
+      'Pair',
       pairCards,
       pairs.first.key.index,
     );
@@ -84,7 +84,7 @@ HandResult _evaluatePartial(List<msg.Card> cards) {
     ..sort((a, b) => b.rank.index.compareTo(a.rank.index));
   return HandResult(
     HandRank.highCard,
-    'High Card ${_rankName(sorted.first.rank)}',
+    'High Card',
     [sorted.first],
     sorted.first.rank.index,
   );
@@ -140,7 +140,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
     }
     return HandResult(
       HandRank.straightFlush,
-      'Straight Flush, ${_rankName(_straightLowRank(sorted, high))} to ${_rankName(high)}',
+      'Straight Flush',
       List.unmodifiable(sorted),
       score([high.index]),
     );
@@ -150,7 +150,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
   if (topCount == 4) {
     return HandResult(
       HandRank.fourOfAKind,
-      'Four ${_rankPluralName(groups.first.key)}',
+      'Four of a Kind',
       List.unmodifiable(groups.first.value),
       score([groups.first.key.index, groups[1].key.index]),
     );
@@ -160,7 +160,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
   if (topCount == 3 && secondCount == 2) {
     return HandResult(
       HandRank.fullHouse,
-      '${_rankPluralName(groups.first.key)} Full of ${_rankPluralName(groups[1].key)}',
+      'Full House',
       List.unmodifiable(sorted),
       score([groups.first.key.index, groups[1].key.index]),
     );
@@ -170,7 +170,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
   if (isFlush) {
     return HandResult(
       HandRank.flush,
-      '${_rankName(sorted.first.rank)}-High Flush',
+      'Flush',
       List.unmodifiable(sorted),
       score(sorted.map((c) => c.rank.index).toList()),
     );
@@ -181,7 +181,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
     final high = straightHigh;
     return HandResult(
       HandRank.straight,
-      'Straight, ${_rankName(_straightLowRank(sorted, high))} to ${_rankName(high)}',
+      'Straight',
       List.unmodifiable(sorted),
       score([high.index]),
     );
@@ -191,7 +191,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
   if (topCount == 3) {
     return HandResult(
       HandRank.threeOfAKind,
-      'Three ${_rankPluralName(groups.first.key)}',
+      'Three of a Kind',
       List.unmodifiable(groups.first.value),
       score([groups.first.key.index, groups[1].key.index, groups[2].key.index]),
     );
@@ -204,7 +204,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
     final relevant = [...highPair.value, ...lowPair.value];
     return HandResult(
       HandRank.twoPair,
-      '${_rankPluralName(highPair.key)} and ${_rankPluralName(lowPair.key)}',
+      'Two Pair',
       List.unmodifiable(relevant),
       score([highPair.key.index, lowPair.key.index, groups[2].key.index]),
     );
@@ -214,7 +214,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
   if (topCount == 2) {
     return HandResult(
       HandRank.onePair,
-      'Pair of ${_rankPluralName(groups.first.key)}',
+      'Pair',
       List.unmodifiable(groups.first.value),
       score([groups.first.key.index, groups[1].key.index, groups[2].key.index, groups[3].key.index]),
     );
@@ -223,7 +223,7 @@ HandResult _evaluateFive(List<msg.Card> cards) {
   // High card — only the single highest card
   return HandResult(
     HandRank.highCard,
-    'High Card ${_rankName(sorted.first.rank)}',
+    'High Card',
     [sorted.first],
     score(sorted.map((c) => c.rank.index).toList()),
   );
@@ -262,13 +262,6 @@ msg.Rank? _straightHighRank(List<msg.Card> sorted) {
   return null;
 }
 
-msg.Rank _straightLowRank(List<msg.Card> sorted, msg.Rank high) {
-  // Wheel: A-2-3-4-5 → low is Ace
-  if (high == msg.Rank.five) return msg.Rank.ace;
-  // Normal: low is high - 4
-  return msg.Rank.values[high.index - 4];
-}
-
 /// Generate all C(n,k) combinations.
 List<List<msg.Card>> _combinations(List<msg.Card> cards, int k) {
   final results = <List<msg.Card>>[];
@@ -285,41 +278,5 @@ void _combHelper(List<msg.Card> cards, int k, int start, List<msg.Card> current,
     current.add(cards[i]);
     _combHelper(cards, k, i + 1, current, results);
     current.removeLast();
-  }
-}
-
-String _rankName(msg.Rank rank) {
-  switch (rank) {
-    case msg.Rank.two: return 'Two';
-    case msg.Rank.three: return 'Three';
-    case msg.Rank.four: return 'Four';
-    case msg.Rank.five: return 'Five';
-    case msg.Rank.six: return 'Six';
-    case msg.Rank.seven: return 'Seven';
-    case msg.Rank.eight: return 'Eight';
-    case msg.Rank.nine: return 'Nine';
-    case msg.Rank.ten: return 'Ten';
-    case msg.Rank.jack: return 'Jack';
-    case msg.Rank.queen: return 'Queen';
-    case msg.Rank.king: return 'King';
-    case msg.Rank.ace: return 'Ace';
-  }
-}
-
-String _rankPluralName(msg.Rank rank) {
-  switch (rank) {
-    case msg.Rank.two: return 'Twos';
-    case msg.Rank.three: return 'Threes';
-    case msg.Rank.four: return 'Fours';
-    case msg.Rank.five: return 'Fives';
-    case msg.Rank.six: return 'Sixes';
-    case msg.Rank.seven: return 'Sevens';
-    case msg.Rank.eight: return 'Eights';
-    case msg.Rank.nine: return 'Nines';
-    case msg.Rank.ten: return 'Tens';
-    case msg.Rank.jack: return 'Jacks';
-    case msg.Rank.queen: return 'Queens';
-    case msg.Rank.king: return 'Kings';
-    case msg.Rank.ace: return 'Aces';
   }
 }
