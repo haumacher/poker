@@ -66,7 +66,11 @@ class _ActionBarState extends State<ActionBar> {
     return _maxBet - me.currentBet;
   }
 
-  int get _minRaise => widget.gameState?.minRaise ?? 0;
+  /// The server sends the minimum raise increment (e.g. big blind size).
+  int get _minRaiseIncrement => widget.gameState?.minRaise ?? 0;
+
+  /// Minimum total bet for a legal raise = current max bet + min increment.
+  int get _minRaiseTotal => _maxBet + _minRaiseIncrement;
 
   int get _myChips => _myPlayerState?.chips ?? 0;
 
@@ -77,8 +81,8 @@ class _ActionBarState extends State<ActionBar> {
   bool get _canRaise {
     final me = _myPlayerState;
     if (me == null) return false;
-    // Must have chips beyond the call, and total bet must reach minRaise
-    return _myChips > _callAmount && (me.chips + me.currentBet) >= _minRaise;
+    // Must have chips beyond the call, and total bet must reach minRaiseTotal
+    return _myChips > _callAmount && (me.chips + me.currentBet) >= _minRaiseTotal;
   }
 
   @override
@@ -113,7 +117,7 @@ class _ActionBarState extends State<ActionBar> {
       ActionType.fold || ActionType.allIn => true,
       ActionType.check => _canCheck,
       ActionType.call => !_canCheck && _canAffordCall,
-      ActionType.raise => _canRaise && _preSelectedRaiseAmount >= _minRaise,
+      ActionType.raise => _canRaise && _preSelectedRaiseAmount >= _minRaiseTotal,
     };
   }
 
@@ -264,10 +268,10 @@ class _ActionBarState extends State<ActionBar> {
                             } else {
                               // Select raise and show slider
                               setState(() {
-                                _raiseSliderValue = _minRaise.toDouble();
+                                _raiseSliderValue = _minRaiseTotal.toDouble();
                                 _showRaiseSlider = true;
                                 _preSelectedAction = ActionType.raise;
-                                _preSelectedRaiseAmount = _minRaise;
+                                _preSelectedRaiseAmount = _minRaiseTotal;
                               });
                             }
                           }
@@ -277,7 +281,7 @@ class _ActionBarState extends State<ActionBar> {
                               setState(() => _showRaiseSlider = false);
                             } else {
                               setState(() {
-                                _raiseSliderValue = _minRaise.toDouble();
+                                _raiseSliderValue = _minRaiseTotal.toDouble();
                                 _showRaiseSlider = true;
                               });
                             }
@@ -310,7 +314,7 @@ class _ActionBarState extends State<ActionBar> {
     if (me == null) return const SizedBox.shrink();
 
     final maxRaise = (me.chips + me.currentBet).toDouble();
-    final min = _minRaise.toDouble();
+    final min = _minRaiseTotal.toDouble();
     if (min >= maxRaise) return const SizedBox.shrink();
 
     return Padding(
