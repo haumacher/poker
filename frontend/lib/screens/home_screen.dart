@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:poker_app/l10n/app_strings.dart';
+import 'package:poker_app/l10n/strings_provider.dart';
 import 'package:poker_app/models/poker_messages.dart';
 import 'package:poker_app/providers/connection_status_provider.dart';
 import 'package:poker_app/providers/message_dispatcher_provider.dart';
@@ -34,11 +36,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     (small: 25, big: 50),
   ];
 
-  static const _timeoutPresets = [
-    (label: 'No Limit', seconds: -1),
-    (label: '30s', seconds: 30),
-    (label: '60s', seconds: 60),
-  ];
+  static const _timeoutSeconds = [-1, 30, 60];
+
+  String _timeoutLabel(AppStrings s, int seconds) =>
+      seconds < 0 ? s.noLimit : '${seconds}s';
 
   @override
   void initState() {
@@ -72,6 +73,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _createTable() async {
+    final s = ref.read(stringsProvider);
     setState(() => _loading = true);
     try {
       final serverHost = _serverHostController.text;
@@ -80,11 +82,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(messageDispatcherProvider).start();
 
       final blind = _blindPresets[_selectedBlindIndex];
-      final timeout = _timeoutPresets[_selectedTimeoutIndex];
+      final timeout = _timeoutSeconds[_selectedTimeoutIndex];
       ws.send(CreateTableMsg(
         smallBlind: blind.small,
         bigBlind: blind.big,
-        turnTimeoutSeconds: timeout.seconds,
+        turnTimeoutSeconds: timeout,
       ));
 
       // Wait for TableInfoMsg from create
@@ -108,7 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection failed: $e')),
+          SnackBar(content: Text(s.connectionFailed(e.toString()))),
         );
       }
     } finally {
@@ -117,10 +119,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _joinTable() async {
+    final s = ref.read(stringsProvider);
     final roomCode = _roomCodeController.text.trim();
     if (roomCode.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Room code must be 6 characters')),
+        SnackBar(content: Text(s.roomCodeInvalid)),
       );
       return;
     }
@@ -149,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection failed: $e')),
+          SnackBar(content: Text(s.connectionFailed(e.toString()))),
         );
       }
     } finally {
@@ -160,6 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<TableInfoMsg?> _waitForTableInfo({
     bool Function(TableInfoMsg)? condition,
   }) async {
+    final s = ref.read(stringsProvider);
     final completer = Completer<TableInfoMsg?>();
     late final ProviderSubscription sub;
 
@@ -177,7 +181,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         sub.close();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Server did not respond in time')),
+            SnackBar(content: Text(s.serverTimeout)),
           );
         }
         return null;
@@ -188,18 +192,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final connectionStatus = ref.watch(connectionStatusProvider);
+    final s = ref.watch(stringsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Poker')),
+      appBar: AppBar(title: Text(s.appTitle)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
+              // Language toggle
+              SegmentedButton<AppLocale>(
+                segments: const [
+                  ButtonSegment(value: AppLocale.en, label: Text('English')),
+                  ButtonSegment(value: AppLocale.de, label: Text('Deutsch')),
+                ],
+                selected: {ref.watch(userPreferencesProvider).locale},
+                onSelectionChanged: (selected) {
+                  ref.read(userPreferencesProvider.notifier).update(
+                    (state) => state.copyWith(locale: selected.first),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+
               // Server host
               TextField(
-                decoration: const InputDecoration(labelText: 'Server'),
+                decoration: InputDecoration(labelText: s.server),
                 controller: _serverHostController,
                 onChanged: (v) {
                   ref.read(userPreferencesProvider.notifier).update(
@@ -213,9 +233,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               TextField(
                 controller: _displayNameController,
                 decoration: InputDecoration(
-                  labelText: 'Display Name *',
+                  labelText: s.displayName,
                   errorText: _displayNameTouched && !_displayNameValid
-                      ? 'Display name is required'
+                      ? s.displayNameRequired
                       : null,
                 ),
                 textCapitalization: TextCapitalization.words,
@@ -228,7 +248,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 32),
 
               // Create table section
-              Text('Create Table', style: Theme.of(context).textTheme.titleMedium),
+              Text(s.createTable, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               SegmentedButton<int>(
                 segments: [
@@ -239,29 +259,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                 ],
                 selected: {_selectedBlindIndex},
-                onSelectionChanged: (s) {
-                  setState(() => _selectedBlindIndex = s.first);
+                onSelectionChanged: (sel) {
+                  setState(() => _selectedBlindIndex = sel.first);
                   ref.read(userPreferencesProvider.notifier).update(
-                    (state) => state.copyWith(blindIndex: s.first),
+                    (state) => state.copyWith(blindIndex: sel.first),
                   );
                 },
               ),
               const SizedBox(height: 12),
-              Text('Turn Timer', style: Theme.of(context).textTheme.bodySmall),
+              Text(s.turnTimer, style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 4),
               SegmentedButton<int>(
                 segments: [
-                  for (var i = 0; i < _timeoutPresets.length; i++)
+                  for (var i = 0; i < _timeoutSeconds.length; i++)
                     ButtonSegment(
                       value: i,
-                      label: Text(_timeoutPresets[i].label),
+                      label: Text(_timeoutLabel(s, _timeoutSeconds[i])),
                     ),
                 ],
                 selected: {_selectedTimeoutIndex},
-                onSelectionChanged: (s) {
-                  setState(() => _selectedTimeoutIndex = s.first);
+                onSelectionChanged: (sel) {
+                  setState(() => _selectedTimeoutIndex = sel.first);
                   ref.read(userPreferencesProvider.notifier).update(
-                    (state) => state.copyWith(timeoutIndex: s.first),
+                    (state) => state.copyWith(timeoutIndex: sel.first),
                   );
                 },
               ),
@@ -274,18 +294,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Create Table'),
+                    : Text(s.createTable),
               ),
               const SizedBox(height: 32),
 
               // Join table section
-              Text('Join Table', style: Theme.of(context).textTheme.titleMedium),
+              Text(s.joinTable, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               TextField(
                 controller: _roomCodeController,
-                decoration: const InputDecoration(
-                  labelText: 'Room Code',
-                  hintText: 'e.g. ABC123',
+                decoration: InputDecoration(
+                  labelText: s.roomCode,
+                  hintText: s.roomCodeHint,
                 ),
                 textCapitalization: TextCapitalization.characters,
                 maxLength: 6,
@@ -293,13 +313,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 4),
               ElevatedButton(
                 onPressed: _loading || !_displayNameValid ? null : _joinTable,
-                child: const Text('Join Table'),
+                child: Text(s.joinTable),
               ),
 
               if (connectionStatus == ConnectionStatus.connected)
-                const Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Text('Connected', style: TextStyle(color: Colors.green)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(s.connected, style: const TextStyle(color: Colors.green)),
                 ),
             ],
           ),

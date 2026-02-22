@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:poker_app/l10n/app_strings.dart';
+import 'package:poker_app/l10n/strings_provider.dart';
 import 'package:poker_app/models/poker_messages.dart' hide Card;
 import 'package:poker_app/models/poker_messages.dart' as msg;
 import 'package:poker_app/providers/hole_cards_provider.dart';
@@ -34,8 +36,10 @@ class SeatWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+
     if (player == null) {
-      return _emptySeat();
+      return _emptySeat(s);
     }
 
     final p = player!;
@@ -74,13 +78,13 @@ class SeatWidget extends ConsumerWidget {
                     color: Colors.yellow,
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
-                    child: Text('D', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                  child: Center(
+                    child: Text(s.dealer, style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
                   ),
                 ),
               Flexible(
                 child: Text(
-                  p.displayName.isEmpty ? 'Seat $seatIndex' : p.displayName,
+                  p.displayName.isEmpty ? s.seat(seatIndex) : p.displayName,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
@@ -125,9 +129,9 @@ class SeatWidget extends ConsumerWidget {
 
           // Status / last action
           if (p.status == PlayerStatus.folded)
-            const Text('FOLDED', style: TextStyle(color: Colors.grey, fontSize: 9))
+            Text(s.folded, style: const TextStyle(color: Colors.grey, fontSize: 9))
           else if (p.status == PlayerStatus.allIn)
-            const Text('ALL IN', style: TextStyle(color: Colors.red, fontSize: 9, fontWeight: FontWeight.bold)),
+            Text(s.allInStatus, style: const TextStyle(color: Colors.red, fontSize: 9, fontWeight: FontWeight.bold)),
 
           // Cards
           const SizedBox(height: 4),
@@ -176,7 +180,7 @@ class SeatWidget extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
-                liveHand!.description,
+                handRankName(s, liveHand!.rank),
                 style: const TextStyle(fontSize: 9, color: Colors.amber, fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -215,7 +219,7 @@ class SeatWidget extends ConsumerWidget {
     return false;
   }
 
-  Widget _emptySeat() {
+  Widget _emptySeat(AppStrings s) {
     return Container(
       width: 120,
       padding: const EdgeInsets.all(6),
@@ -226,7 +230,7 @@ class SeatWidget extends ConsumerWidget {
       ),
       child: Center(
         child: Text(
-          'Seat ${seatIndex + 1}',
+          s.seat(seatIndex + 1),
           style: const TextStyle(color: Colors.white24, fontSize: 12),
         ),
       ),

@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:poker_app/l10n/strings_provider.dart';
 import 'package:poker_app/models/poker_messages.dart';
 
-class PotDisplay extends StatelessWidget {
+class PotDisplay extends ConsumerWidget {
   final int pot;
   final List<SidePot> sidePots;
 
   const PotDisplay({super.key, required this.pot, required this.sidePots});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (pot == 0) return const SizedBox.shrink();
+
+    final s = ref.watch(stringsProvider);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -22,7 +26,7 @@ class PotDisplay extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            'Pot: $pot',
+            s.potDisplay(pot),
             style: const TextStyle(
               color: Colors.amber,
               fontWeight: FontWeight.bold,
@@ -34,7 +38,7 @@ class PotDisplay extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              sidePots.map((sp) => 'Side: ${sp.amount}').join(' | '),
+              sidePots.map((sp) => s.sideDisplay(sp.amount)).join(' | '),
               style: const TextStyle(color: Colors.amber, fontSize: 10),
             ),
           ),

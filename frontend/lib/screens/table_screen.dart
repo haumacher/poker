@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:poker_app/l10n/strings_provider.dart';
 import 'package:poker_app/models/poker_messages.dart';
 import 'package:poker_app/providers/connection_status_provider.dart';
 import 'package:poker_app/providers/error_provider.dart';
@@ -70,6 +71,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
     final mySeat = ref.watch(playerSeatProvider);
     final connectionStatus = ref.watch(connectionStatusProvider);
     final handResult = ref.watch(handResultProvider);
+    final s = ref.watch(stringsProvider);
 
     final showContinue = handResult != null && !_confirmed;
 
@@ -81,7 +83,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
         ),
         title: tableInfo != null
             ? RoomCodeDisplay(roomCode: tableInfo.roomCode)
-            : const Text('Table'),
+            : Text(s.table),
         actions: [
           if (connectionStatus != ConnectionStatus.connected)
             const Padding(
@@ -103,7 +105,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
                   child: Text(
                     handResult.winners
                         .map((w) =>
-                            '${_playerName(gameState, w.seat)} wins ${w.amount} (${w.handDescription})')
+                            s.playerWins(_playerName(gameState, w.seat), w.amount, w.handDescription))
                         .join(' | '),
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -126,6 +128,7 @@ class _TableScreenState extends ConsumerState<TableScreen> {
               ActionBar(
                 gameState: gameState,
                 mySeat: mySeat,
+                strings: s,
                 onAction: (action, amount) {
                   ref.read(websocketServiceProvider).send(
                         PlayerActionMsg(actionType: action, amount: amount),
@@ -142,13 +145,13 @@ class _TableScreenState extends ConsumerState<TableScreen> {
               connectionStatus == ConnectionStatus.reconnecting)
             Container(
               color: Colors.black54,
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Reconnecting...', style: TextStyle(fontSize: 18)),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(s.reconnecting, style: const TextStyle(fontSize: 18)),
                   ],
                 ),
               ),
@@ -159,10 +162,11 @@ class _TableScreenState extends ConsumerState<TableScreen> {
   }
 
   String _playerName(GameStateMsg? state, int seat) {
-    if (state == null) return 'Seat $seat';
+    final s = ref.read(stringsProvider);
+    if (state == null) return s.seat(seat);
     for (final p in state.players) {
-      if (p.seat == seat) return p.displayName.isEmpty ? 'Seat $seat' : p.displayName;
+      if (p.seat == seat) return p.displayName.isEmpty ? s.seat(seat) : p.displayName;
     }
-    return 'Seat $seat';
+    return s.seat(seat);
   }
 }

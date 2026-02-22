@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'package:poker_app/l10n/app_strings.dart';
 import 'package:poker_app/models/poker_messages.dart';
 
 class ActionBar extends StatefulWidget {
   final GameStateMsg? gameState;
   final int mySeat;
+  final AppStrings strings;
   final void Function(ActionType action, int amount) onAction;
   final bool showContinue;
   final VoidCallback? onContinue;
@@ -13,6 +15,7 @@ class ActionBar extends StatefulWidget {
     super.key,
     required this.gameState,
     required this.mySeat,
+    required this.strings,
     required this.onAction,
     this.showContinue = false,
     this.onContinue,
@@ -156,6 +159,8 @@ class _ActionBarState extends State<ActionBar> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.strings;
+
     if (widget.showContinue) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -172,7 +177,7 @@ class _ActionBarState extends State<ActionBar> {
               foregroundColor: Colors.white,
             ),
             onPressed: widget.onContinue,
-            child: const Text('Continue'),
+            child: Text(s.continueLabel),
           ),
         ),
       );
@@ -187,12 +192,12 @@ class _ActionBarState extends State<ActionBar> {
             color: Color(0xFF1A1A1A),
             border: Border(top: BorderSide(color: Colors.white12)),
           ),
-          child: const SizedBox(
+          child: SizedBox(
             height: 44,
             child: Center(
               child: Text(
-                'Waiting for other players...',
-                style: TextStyle(color: Colors.white54, fontSize: 14),
+                s.waitingForPlayers,
+                style: const TextStyle(color: Colors.white54, fontSize: 14),
               ),
             ),
           ),
@@ -231,7 +236,7 @@ class _ActionBarState extends State<ActionBar> {
               children: [
                 Expanded(
                   child: _actionButton(
-                    label: 'Cancel',
+                    label: s.cancel,
                     color: Colors.red.shade700,
                     onPressed: () {
                       setState(() {
@@ -250,7 +255,7 @@ class _ActionBarState extends State<ActionBar> {
                     final amount = _raiseSliderValue.toInt();
                     final isCall = amount <= _maxBet;
                     return _actionButton(
-                      label: isCall ? 'Call $_callAmount' : 'Confirm $amount',
+                      label: isCall ? s.call(_callAmount) : s.confirm(amount),
                       color: isCall ? Colors.blue.shade700 : Colors.green.shade700,
                       onPressed: isPreSelecting
                           ? () {
@@ -284,7 +289,7 @@ class _ActionBarState extends State<ActionBar> {
                 // Fold
                 Expanded(
                   child: _actionButton(
-                    label: 'Fold',
+                    label: s.fold,
                     color: Colors.red.shade700,
                     outlined: isPreSelecting,
                     selected: _preSelectedAction == ActionType.fold,
@@ -299,7 +304,7 @@ class _ActionBarState extends State<ActionBar> {
                 Expanded(
                   child: _canCheck
                       ? _actionButton(
-                          label: 'Check',
+                          label: s.check,
                           color: Colors.blue.shade700,
                           outlined: isPreSelecting,
                           selected: _preSelectedAction == ActionType.check,
@@ -308,7 +313,7 @@ class _ActionBarState extends State<ActionBar> {
                               : () => widget.onAction(ActionType.check, 0),
                         )
                       : _actionButton(
-                          label: 'Call $_callAmount',
+                          label: s.call(_callAmount),
                           color: Colors.blue.shade700,
                           outlined: isPreSelecting,
                           selected: _preSelectedAction == ActionType.call,
@@ -325,7 +330,7 @@ class _ActionBarState extends State<ActionBar> {
                 if (_canRaise)
                   Expanded(
                     child: _actionButton(
-                      label: 'Raise',
+                      label: s.raise,
                       color: Colors.green.shade700,
                       outlined: isPreSelecting,
                       selected: _preSelectedAction == ActionType.raise,
@@ -352,7 +357,7 @@ class _ActionBarState extends State<ActionBar> {
                 // All-In
                 Expanded(
                   child: _actionButton(
-                    label: 'All In',
+                    label: s.allIn,
                     color: Colors.orange.shade800,
                     outlined: isPreSelecting,
                     selected: _preSelectedAction == ActionType.allIn,
@@ -391,6 +396,7 @@ class _ActionBarState extends State<ActionBar> {
   }
 
   Widget _buildRaiseSlider([bool isPreSelecting = false]) {
+    final s = widget.strings;
     final steps = _buildRaiseSteps();
     if (steps.length < 2) return const SizedBox.shrink();
 
@@ -401,11 +407,11 @@ class _ActionBarState extends State<ActionBar> {
     int snap(double v) {
       var best = steps.first;
       var bestDist = (v - best).abs();
-      for (final s in steps) {
-        final d = (v - s).abs();
+      for (final st in steps) {
+        final d = (v - st).abs();
         if (d < bestDist) {
           bestDist = d;
-          best = s;
+          best = st;
         }
       }
       return best;
@@ -415,10 +421,10 @@ class _ActionBarState extends State<ActionBar> {
     final isAllIn = sliderAmount == steps.last;
     final isCall = sliderAmount <= _maxBet;
     final label = isCall
-        ? 'Call: $_callAmount'
+        ? s.callSlider(_callAmount)
         : isAllIn
-            ? 'All In: ${steps.last}'
-            : 'Raise: $sliderAmount';
+            ? s.allInSlider(steps.last)
+            : s.raiseSlider(sliderAmount);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -430,9 +436,9 @@ class _ActionBarState extends State<ActionBar> {
               Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
               Row(
                 children: [
-                  _presetButton('Min', min),
-                  _presetButton('1/2 Pot', _halfPot(min, max)),
-                  _presetButton('Pot', _potRaise(min, max)),
+                  _presetButton(s.min, min),
+                  _presetButton(s.halfPot, _halfPot(min, max)),
+                  _presetButton(s.pot, _potRaise(min, max)),
                 ],
               ),
             ],
