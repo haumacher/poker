@@ -185,7 +185,7 @@ class SeatWidget extends ConsumerWidget {
   }
 
   Widget _showdownCards(ShowdownHand sh) {
-    final bestCards = sh.bestCards;
+    final relevant = isWinner ? evaluateHand(sh.bestCards).relevantCards : <msg.Card>[];
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -193,14 +193,14 @@ class SeatWidget extends ConsumerWidget {
           card: sh.holeCards[0],
           width: 32,
           height: 45,
-          highlighted: isWinner && _isInRelevant(sh.holeCards[0], bestCards),
+          highlighted: _isInRelevant(sh.holeCards[0], relevant),
         ),
         const SizedBox(width: 2),
         PlayingCard(
           card: sh.holeCards[1],
           width: 32,
           height: 45,
-          highlighted: isWinner && _isInRelevant(sh.holeCards[1], bestCards),
+          highlighted: _isInRelevant(sh.holeCards[1], relevant),
         ),
       ],
     );

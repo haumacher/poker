@@ -163,11 +163,12 @@ class PokerTable extends ConsumerWidget {
     final community = gameState?.communityCards ?? [];
     if (community.isEmpty) return const {};
 
-    // At showdown: highlight based on first winner's best cards
+    // At showdown: highlight only the relevant cards from the winner's hand
     if (handResult != null) {
       for (final sh in handResult!.showdownHands) {
         if (winnerSeats.contains(sh.seat)) {
-          return _matchCardIndices(community, sh.bestCards);
+          final evaluated = evaluateHand(sh.bestCards);
+          return _matchCardIndices(community, evaluated.relevantCards);
         }
       }
       return const {};
