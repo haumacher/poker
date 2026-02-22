@@ -297,14 +297,13 @@ public class GameSession {
 			}
 		}
 
-		listener.onPlayerAction(seat, action, amount);
-
 		// Check if hand should end
 		List<Integer> inHand = getPlayersInHand();
 		List<Integer> active = getActivePlayers();
 
 		if (inHand.size() <= 1) {
 			// Everyone else folded — last player wins
+			listener.onPlayerAction(seat, action, amount);
 			if (inHand.size() == 1) {
 				int winner = inHand.get(0);
 				long winnings = pot.getTotal();
@@ -317,13 +316,16 @@ public class GameSession {
 
 		if (active.isEmpty()) {
 			// Everyone remaining is all-in — deal out remaining community cards and go to showdown
+			listener.onPlayerAction(seat, action, amount);
 			dealRemainingCommunityCards();
 			resolveShowdown();
 			return true;
 		}
 
-		// Advance to next active player
+		// Advance to next active player, then notify listener so broadcast
+		// includes the updated currentPlayerSeat.
 		advanceTurn();
+		listener.onPlayerAction(seat, action, amount);
 
 		return true;
 	}
