@@ -65,12 +65,32 @@ public class GameSession {
 	public boolean removePlayer(int seat) {
 		if (seat < 0 || seat >= MAX_SEATS) return false;
 		if (seats[seat] == null) return false;
-		if (phase != Phase.WAITING_FOR_PLAYERS && seats[seat].isInHand()) {
-			// If in active hand, fold first
+
+		boolean wasInActiveHand = phase != Phase.WAITING_FOR_PLAYERS
+				&& phase != Phase.SHOWDOWN && seats[seat].isInHand();
+		boolean wasCurrentPlayer = seat == currentPlayerSeat;
+
+		if (wasInActiveHand) {
 			seats[seat].setStatus(PlayerStatus.FOLDED);
 			pot.fold(seat);
 		}
 		seats[seat] = null;
+
+		if (wasInActiveHand) {
+			List<Integer> inHand = getPlayersInHand();
+			if (inHand.size() <= 1) {
+				if (inHand.size() == 1) {
+					int winner = inHand.get(0);
+					long winnings = pot.getTotal();
+					seats[winner].addChips(winnings);
+					listener.onWinWithoutShowdown(winner, winnings);
+				}
+				endHand();
+			} else if (wasCurrentPlayer) {
+				advanceTurn();
+				listener.onPhaseChanged(this);
+			}
+		}
 		return true;
 	}
 
@@ -133,6 +153,8 @@ public class GameSession {
 	 * @return true if a hand was started, false if not enough players
 	 */
 	public boolean startHand() {
+		if (phase != Phase.WAITING_FOR_PLAYERS) return false;
+
 		List<Integer> activePlayers = getReadyPlayers();
 		if (activePlayers.size() < 2) {
 			return false;
