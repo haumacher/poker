@@ -1,0 +1,140 @@
+name: Build Linux Distribution
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Backend (server.war) ---
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build server.war
+        run: ./mvnw -B package -DskipTests
+        working-directory: backend
+
+      # --- Frontend (Flutter Linux) ---
+      - name: Install Linux build dependencies
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: frontend
+
+      - name: Build Flutter Linux release
+        run: flutter build linux --release
+        working-directory: frontend
+
+      # --- Assemble distribution ---
+      - name: Assemble Poker distribution
+        run: |
+          mkdir -p dist/Poker/app
+          cp -r frontend/build/linux/x64/release/bundle/* dist/Poker/app/
+          cp backend/server/target/server-1.0-SNAPSHOT.war dist/Poker/server.war
+          chmod +x dist/Poker/app/poker_app
+
+      - name: Create start-server.sh
+        run: |
+          cat > dist/Poker/start-server.sh << 'SCRIPT'
+          #!/bin/bash
+          echo ""
+          echo "  ♠♥♦♣  POKER SERVER  ♣♦♥♠"
+          echo "  ========================"
+          echo ""
+          echo "  Der Server startet auf Port 8080..."
+          echo ""
+          echo "  Andere Spieler muessen deine LAN-IP im"
+          echo "  \"Server\"-Feld der Poker-App eingeben."
+          echo ""
+          echo "  Deine IP-Adressen:"
+          echo "  ------------------"
+          hostname -I | tr ' ' '\n' | grep -v '^$' | while read ip; do echo "    $ip:8080"; done
+          echo ""
+          echo "  Druecke Strg+C um den Server zu beenden."
+          echo "  ========================================="
+          echo ""
+          java -jar "$(dirname "$0")/server.war"
+          SCRIPT
+          chmod +x dist/Poker/start-server.sh
+
+      - name: Create README.txt
+        run: |
+          cat > dist/Poker/README.txt << 'EOF'
+          =============================================
+            POKER - Texas Hold'em mit Freunden
+          =============================================
+
+          VORAUSSETZUNGEN
+          ===============
+          - Der Host (Gastgeber) braucht Java installiert
+            (https://adoptium.net/ - Temurin JDK 21+)
+          - Alle Spieler muessen im gleichen Netzwerk sein
+            (gleiches WLAN/LAN)
+
+
+          FUER DEN HOST (Gastgeber)
+          =========================
+          1. Terminal oeffnen in diesem Ordner
+          2. ./start-server.sh ausfuehren
+             -> Der Server startet und zeigt deine IP-Adresse
+          3. ./app/poker_app starten
+          4. Server-Feld: localhost:8080 (Standard)
+          5. Namen eingeben, Tisch erstellen, Freunde einladen!
+          6. Teile deine IP-Adresse mit deinen Freunden
+             (wird beim Serverstart angezeigt)
+
+
+          FUER MITSPIELER
+          ===============
+          1. ./app/poker_app starten
+          2. Im "Server"-Feld die IP des Hosts eingeben
+             z.B.: 192.168.1.50:8080
+          3. Namen eingeben und dem Tisch beitreten
+
+
+          EINSTELLUNGEN (Zahnrad-Icon oben rechts)
+          =========================================
+          - Sprache: Alle Spieler koennen zwischen
+            Deutsch und Englisch wechseln
+          - Timer: Nur der Host kann die Zugzeit aendern
+          - Chips: Nur der Host kann Chips anpassen
+            (nur zwischen den Haenden moeglich)
+
+
+          FEHLERBEHEBUNG
+          ==============
+          - "Verbindung fehlgeschlagen":
+            Pruefe ob der Server laeuft und die IP stimmt
+          - Firewall: Beim ersten Start ggf. Port 8080
+            in der Firewall freigeben
+          - Port blockiert: Stelle sicher, dass Port 8080 frei ist
+            (keine andere Server-Instanz laeuft)
+
+          HINWEIS
+          =======
+          Falls die App nicht startet, fehlende Libraries
+          installieren:
+            sudo apt install libgtk-3-0
+          EOF
+
+      - name: Create tar.gz archive
+        run: cd dist && tar -czf Poker-Linux.tar.gz Poker
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Poker-Linux
+          path: dist/Poker-Linux.tar.gz
